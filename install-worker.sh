@@ -21,6 +21,7 @@ sudo yum install -y \
     conntrack \
     curl \
     htop \
+    mdadm \
     nfs-utils \
     nmap \
     ntp \
@@ -132,6 +133,18 @@ sudo mkdir -p /etc/eks
 sudo mv $TEMPLATE_DIR/eni-max-pods.txt /etc/eks/eni-max-pods.txt
 sudo mv $TEMPLATE_DIR/bootstrap.sh /etc/eks/bootstrap.sh
 sudo chmod +x /etc/eks/bootstrap.sh
+
+################################################################################
+### Boot setup #################################################################
+################################################################################
+
+sudo mv $TEMPLATE_DIR/local_storage.sh /etc/eks/local_storage.sh
+sudo chmod +x /etc/eks/local_storage.sh
+sudo mv $TEMPLATE_DIR/20_boot_setup.cfg /etc/cloud/cloud.cfg.d/20_boot_setup.cfg
+
+################################################################################
+### Cleanup ####################################################################
+################################################################################
 
 # Clean up yum caches to reduce the image size
 sudo yum clean all
