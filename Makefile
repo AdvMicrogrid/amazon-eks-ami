@@ -14,7 +14,7 @@ SOURCE_AMI_ID ?= $(shell aws \
 	--query 'max_by(Images[], &CreationDate).ImageId')
 
 DOCKER_PACKER = docker run -v /mnt/.aws/credentials:/home/jenkins/.aws/credentials \
-	-v `pwd`/:/workspace \
+	-v `pwd`/:/workspace -w /workspace\
 	hashicorp/packer:light
 
 .PHONY: all validate ami 1.13 1.12 1.11 1.10
