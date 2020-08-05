@@ -22,7 +22,7 @@ DOCKER_PACKER = docker run -v /mnt/.aws/credentials:/home/jenkins/.aws/credentia
 all: 1.12
 
 validate:
-	packer validate eks-worker-bionic.json
+	$(DOCKER_PACKER) validate eks-worker-bionic.json
 
 1.10: validate
 	packer build \
