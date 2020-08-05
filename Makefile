@@ -13,7 +13,7 @@ SOURCE_AMI_ID ?= $(shell aws \
 		Name=state,Values=available \
 	--query 'max_by(Images[], &CreationDate).ImageId')
 
-DOCKER_PACKER = docker run -v /mnt/.aws/credentials:/home/jenkins/.aws/credentials \
+DOCKER_PACKER = docker run -v /mnt/.aws/credentials:~/.aws/credentials \
 	-v `pwd`/:/workspace -w /workspace\
 	hashicorp/packer:light
 
