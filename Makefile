@@ -14,6 +14,7 @@ SOURCE_AMI_ID ?= $(shell aws \
 	--query 'max_by(Images[], &CreationDate).ImageId')
 
 DOCKER_PACKER = docker run -v /mnt/.aws/redentials:/root/.aws/credentials \
+	-e AWS_SHARED_CREDENTIALS_FILE=/root/.aws/credentials \
 	-v `pwd`/:/workspace -w /workspace\
 	hashicorp/packer:light
 
