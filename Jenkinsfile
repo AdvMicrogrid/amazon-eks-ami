@@ -20,6 +20,7 @@ node {
         }
 
         stage('build') {
+            // test comment
             sh 'make -j2 1.14'
         }
     } catch (Exception ex) {
