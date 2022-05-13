@@ -336,6 +336,7 @@ CA_CERTIFICATE_DIRECTORY=/etc/kubernetes/pki
 CA_CERTIFICATE_FILE_PATH=$CA_CERTIFICATE_DIRECTORY/ca.crt
 mkdir -p $CA_CERTIFICATE_DIRECTORY
 if [[ -z "${B64_CLUSTER_CA}" ]] || [[ -z "${APISERVER_ENDPOINT}" ]]; then
+    echo "B64 CLUSTER CA or APISERVER ENDPOINT is not set"
     DESCRIBE_CLUSTER_RESULT="/tmp/describe_cluster_result.txt"
 
     # Retry the DescribeCluster API for API_RETRY_ATTEMPTS
@@ -373,6 +374,7 @@ if [[ -z "${B64_CLUSTER_CA}" ]] || [[ -z "${APISERVER_ENDPOINT}" ]]; then
       IP_FAMILY=$(cat $DESCRIBE_CLUSTER_RESULT | awk '{print $2}')
     fi
 fi
+echo "After B64 if block"
 
 if [[ -z "${IP_FAMILY}" ]] || [[ "${IP_FAMILY}" == "None" ]]; then
        ### this can happen when the ifFamily field is not found in describeCluster response
@@ -394,18 +396,25 @@ fi
 MAC=$(get_meta_data 'latest/meta-data/network/interfaces/macs/' | head -n 1 | sed 's/\/$//')
 
 if [[ -z "${DNS_CLUSTER_IP}" ]]; then
+  echo "DNS CLUSTER IP is not set"
   if [[ ! -z "${SERVICE_IPV4_CIDR}" ]] && [[ "${SERVICE_IPV4_CIDR}" != "None" ]] ; then
+    echo "SERVICE IPV4 CIDR set"
     #Sets the DNS Cluster IP address that would be chosen from the serviceIpv4Cidr. (x.y.z.10)
     DNS_CLUSTER_IP=${SERVICE_IPV4_CIDR%.*}.10
+    echo "DNS_CLUSTER_IP = ${DNS_CLUSTER_IP}"
   else
+    echo "DNS CLUSTER IP and SERVICE IPV4 CIDR not set"
     TEN_RANGE=$(get_meta_data "latest/meta-data/network/interfaces/macs/$MAC/vpc-ipv4-cidr-blocks" | grep -c '^10\..*' || true )
     DNS_CLUSTER_IP=10.100.0.10
     if [[ "$TEN_RANGE" != "0" ]]; then
       DNS_CLUSTER_IP=172.20.0.10
     fi
+    echo "DNS_CLUSTER_IP ${DNS_CLUSTER_IP}"
   fi
 else
+  echo "DNS CLUSTER IP set"
   DNS_CLUSTER_IP="${DNS_CLUSTER_IP}"
+  echo "DNS_CLUSTER_IP ${DNS_CLUSTER_IP}"
 fi
 
 KUBELET_CONFIG=/etc/kubernetes/kubelet/kubelet-config.json
