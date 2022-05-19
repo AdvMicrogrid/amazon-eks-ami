@@ -4,7 +4,7 @@ jobs:
   build_and_push:
     # job to build aws ecr ami image
     docker:
-      - image: cimg/base:stable
+      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/packer:1.6.1
     working_directory: ~/aws_ecr_ami
     steps:
       - checkout:
@@ -14,7 +14,7 @@ jobs:
           command: echo 'export BUILD_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-$(git rev-parse --verify HEAD | cut -c1-8)"' >> ${BASH_ENV}
       - run:
           name: Build eks ami
-          command: "echo Build tag variable value: ${BUILD_TAG}"
+          command: "echo Build tag variable value: ${BUILD_TAG}, circle sha1: ${CIRCLE_SHA1}"
       - run:
           name: Push eks ami to aws
           command: "aws s3 ls"
