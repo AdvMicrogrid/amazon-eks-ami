@@ -17,7 +17,7 @@ jobs:
           command: "echo Build tag variable value: ${BUILD_TAG}, circle sha1: ${CIRCLE_SHA1}"
       - run:
           name: Push eks ami to aws
-          command: "aws s3 ls"
+          command: "packer version"
       - run:
           name: Notify after build
           command: "echo TODO: prepare notification step"
