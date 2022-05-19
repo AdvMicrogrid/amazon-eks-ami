@@ -13,13 +13,12 @@ jobs:
           name: Prepare env for build
           command: |
             COMMIT_HASH=$(git rev-parse --verify HEAD | cut -c1-8)
-            echo ${COMMIT_HASH}
             COMMIT_HASH=`echo ${COMMIT_HASH} | sed 's/ *$//g'`
             echo ${COMMIT_HASH}
-            echo 'export BUILD_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-${COMMIT_HASH}"' >> $BASH_ENV
+            echo 'export BUILD_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-${COMMIT_HASH}"' >> ${BASH_ENV}
       - run:
           name: Build eks ami
-          command: "echo Build tag variable value: $BUILD_TAG"
+          command: "echo Build tag variable value: ${BUILD_TAG}"
       - run:
           name: Push eks ami to aws
           command: "echo TODO: add step to push ready ami to aws"
