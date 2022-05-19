@@ -20,10 +20,10 @@ jobs:
           command: ls -al
       - run:
           name: Packer Validate
-          command: make ci-validate -e
+          command: make -e ci-validate
       - run:
           name: Packer build
-          command: make all -e
+          command: make -e all
       - run:
           name: Notify after build
           command: "echo TODO: prepare notification step"
