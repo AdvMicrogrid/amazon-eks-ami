@@ -75,7 +75,7 @@ k8s: validate
 # Circle CI pipeline
 .PHONY: ci-valiedate
 ci-validate:
-	$(P) validate validate $(foreach packerVar,$(PACKER_VARIABLES), $(if $($(packerVar)),--var $(packerVar)='$($(packerVar))',)) eks-worker-al2.json
+	$(P) validate $(foreach packerVar,$(PACKER_VARIABLES), $(if $($(packerVar)),--var $(packerVar)='$($(packerVar))',)) eks-worker-al2.json
 
 .PHONY: ci-build
 ci-build:
