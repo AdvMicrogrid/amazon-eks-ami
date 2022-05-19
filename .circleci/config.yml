@@ -13,11 +13,11 @@ jobs:
           name: Prepare env for build
           command: echo 'export BUILD_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-$(git rev-parse --verify HEAD | cut -c1-8)"' >> ${BASH_ENV}
       - run:
-          name: Build eks ami
-          command: "echo Build tag variable value: ${BUILD_TAG}, circle sha1: ${CIRCLE_SHA1}"
+          name: Packer Validate
+          command: make ci-validate
       - run:
-          name: Push eks ami to aws
-          command: "packer version"
+          name: Packer build
+          command: make all
       - run:
           name: Notify after build
           command: "echo TODO: prepare notification step"
