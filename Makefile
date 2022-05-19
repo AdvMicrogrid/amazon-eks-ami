@@ -43,7 +43,9 @@ T_YELLOW := \e[0;33m
 T_RESET := \e[0m
 
 .PHONY: all 1.18 1.19 1.20 1.21 1.22
-all: 1.19
+all: 1.19-build
+
+all-validate: 1.19-validate
 
 .PHONY: validate
 validate:
@@ -56,8 +58,12 @@ k8s: validate
 
 # Build dates and versions taken from https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html
 
-.PHONY: 1.19
-1.19:
+.PHONY: 1.19-validate
+1.19-validate:
+	$(MAKE) ci-validate kubernetes_version=1.19.15 kubernetes_build_date=2021-11-10 pull_cni_from_github=true
+
+.PHONY: 1.19-build
+1.19-build:
 	$(MAKE) ci-build kubernetes_version=1.19.15 kubernetes_build_date=2021-11-10 pull_cni_from_github=true
 
 .PHONY: 1.20
