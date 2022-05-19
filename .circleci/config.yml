@@ -11,11 +11,7 @@ jobs:
           path: ~/aws_ecr_ami
       - run:
           name: Prepare env for build
-          command: |
-            COMMIT_HASH=<< pipeline.git.revision >>
-            COMMIT_HSAH=${COMMIT_HASH} | cut -c1-8
-            echo ${COMMIT_HASH}
-            echo 'export BUILD_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-${COMMIT_HASH}"' >> ${BASH_ENV}
+          command: echo 'export BUILD_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-$(git rev-parse --verify HEAD | cut -c1-8)"' >> ${BASH_ENV}
       - run:
           name: Build eks ami
           command: "echo Build tag variable value: ${BUILD_TAG}"
