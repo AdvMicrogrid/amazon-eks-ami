@@ -12,7 +12,8 @@ jobs:
       - run:
           name: Prepare env for build
           command: |
-            COMMIT_HASH=$(<< pipeline.git.revision >> | cut -c1-8)
+            COMMIT_HASH=<< pipeline.git.revision >>
+            COMMIT_HSAH=${COMMIT_HASH} | cut -c1-8
             echo ${COMMIT_HASH}
             echo 'export BUILD_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-${COMMIT_HASH}"' >> ${BASH_ENV}
       - run:
