@@ -1,26 +1,32 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+  build_and_push:
+    # job to build aws ecr ami image
     docker:
       - image: cimg/base:stable
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    working_directory: ~/aws_ecr_ami
     steps:
-      - checkout
+      - checkout:
+          path: ~/aws_ecr_ami
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: Prepare env for build
+          command: |
+            COMMIT_HASH=$(git rev-parse --verify HEAD | cut -c1-8)
+            COMMIT_HASH=`echo $COMMIT_HASH | sed 's/ *$//g'`
+            BUILD_TAG = "${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUMBER}-${COMMIT_HASH}"
+            echo 'export BUILD_TAG=$BUILD_TAG' >> $BASH_ENV
+      - run:
+          name: Build eks ami
+          command: "echo Build tag variable value: $BUILD_TAG"
+      - run:
+          name: Push eks ami to aws
+          command: "echo TODO: add step to push ready ami to aws"
+      - run:
+          name: Notify after build
+          command: "echo TODO: prepare notification step"
 
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  say-hello-workflow:
+  aws_eks_ami:
     jobs:
-      - say-hello
+      - build_and_push
