@@ -14,8 +14,7 @@ jobs:
           command: |
             COMMIT_HASH=$(git rev-parse --verify HEAD | cut -c1-8)
             COMMIT_HASH=`echo $COMMIT_HASH | sed 's/ *$//g'`
-            BUILD_TAG = "${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUMBER}-${COMMIT_HASH}"
-            echo 'export BUILD_TAG=$BUILD_TAG' >> $BASH_ENV
+            echo 'export BUILD_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUMBER}-${COMMIT_HASH}"' >> $BASH_ENV
       - run:
           name: Build eks ami
           command: "echo Build tag variable value: $BUILD_TAG"
