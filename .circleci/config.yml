@@ -16,6 +16,9 @@ jobs:
           name: Install requirements
           command: apk add make
       - run:
+          name: Check location content
+          command: ls -al
+      - run:
           name: Packer Validate
           command: make ci-validate
       - run:
