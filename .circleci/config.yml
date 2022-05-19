@@ -13,6 +13,9 @@ jobs:
           name: Prepare env for build
           command: echo 'export BUILD_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-$(git rev-parse --verify HEAD | cut -c1-8)"' >> ${BASH_ENV}
       - run:
+          name: Install requirements
+          command: apk add make
+      - run:
           name: Packer Validate
           command: make ci-validate
       - run:
