@@ -1,5 +1,6 @@
 # commands:
 P := packer
+
 #Fluence Edited Variables
 AWS_DEFAULT_REGION = us-west-2
 build_tag := $(or $(BUILD_TAG), $(shell date +%s))
@@ -74,9 +75,9 @@ k8s: validate
 # Circle CI pipeline
 .PHONY: ci-valiedate
 ci-validate:
-	$(P) validate validate $(foreach packerVar,$(PACKER_VARIABLES), $(if $($(packerVar)),--var $(packerVar)='$($(packerVar))',)) ./eks-worker-al2.json
+	$(P) validate validate $(foreach packerVar,$(PACKER_VARIABLES), $(if $($(packerVar)),--var $(packerVar)='$($(packerVar))',)) eks-worker-al2.json
 
 .PHONY: ci-build
 ci-build:
 	@echo "$(T_GREEN)Building AMI for version $(T_YELLOW)$(kubernetes_version)$(T_GREEN) on $(T_YELLOW)$(arch)$(T_RESET)"
-	$(P) build $(foreach packerVar,$(PACKER_VARIABLES), $(if $($(packerVar)),--var $(packerVar)='$($(packerVar))',)) ./eks-worker-al2.json
+	$(P) build $(foreach packerVar,$(PACKER_VARIABLES), $(if $($(packerVar)),--var $(packerVar)='$($(packerVar))',)) eks-worker-al2.json
