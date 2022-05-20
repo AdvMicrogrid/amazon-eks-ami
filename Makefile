@@ -47,10 +47,6 @@ all: 1.19-build
 
 all-validate: 1.19-validate
 
-.PHONY: validate
-validate:
-	$(PACKER_BINARY) validate $(foreach packerVar,$(PACKER_VARIABLES), $(if $($(packerVar)),--var $(packerVar)='$($(packerVar))',)) /workspace/eks-worker-al2.json
-
 .PHONY: k8s
 k8s: validate
 	@echo "$(T_GREEN)Building AMI for version $(T_YELLOW)$(kubernetes_version)$(T_GREEN) on $(T_YELLOW)$(arch)$(T_RESET)"

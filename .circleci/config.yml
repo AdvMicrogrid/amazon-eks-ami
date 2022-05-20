@@ -16,9 +16,12 @@ jobs:
     # job to validate aws ecr ami image
     docker:
       - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/packer:1.6.1
+    working_directory: ~/aws_ecr_ami
     steps:
       - attach_workspace:
             at: .
+      - checkout:
+          path: ~/aws_ecr_ami
       - run:
           name: Install requirements
           command: apk add make
@@ -29,9 +32,12 @@ jobs:
     # job to build aws ecr ami image
     docker:
       - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/packer:1.6.1
+    working_directory: ~/aws_ecr_ami
     steps:
       - attach_workspace:
             at: .
+      - checkout:
+          path: ~/aws_ecr_ami
       - run:
           name: Install requirements
           command: apk add make
