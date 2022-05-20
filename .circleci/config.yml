@@ -1,8 +1,8 @@
 version: 2.1
 
 jobs:
-  build_and_push:
-    # job to build aws ecr ami image
+  prepare_env:
+    # job to prepare build environment
     docker:
       - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/packer:1.6.1
     working_directory: ~/aws_ecr_ami
@@ -15,18 +15,44 @@ jobs:
       - run:
           name: Install requirements
           command: apk add make
+  validate:
+    # job to validate aws ecr ami image
+    docker:
+      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/packer:1.6.1
+    steps:
+      - attach_workspace:
+            at: .
       - run:
           name: Packer Validate
           command: make -e all-validate
+  build:
+    # job to build aws ecr ami image
+    docker:
+      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/packer:1.6.1
+    steps:
+      - attach_workspace:
+            at: .
       - run:
           name: Packer build
           command: make -e all
       - run:
           name: Notify after build
-          command: "echo TODO: prepare notification step"
+          command: "echo TODO: finish datadog integration"
 
 workflows:
   aws_eks_ami:
     jobs:
-      - build_and_push:
+      - prepare_env:
           context: CICD
+      - validate:
+          context: CICD
+          requires:
+            - prepare_env
+      - build:
+          context: CICD
+          requires:
+            - validate
+#          filters:
+#            branches:
+#              only:
+#                - master
