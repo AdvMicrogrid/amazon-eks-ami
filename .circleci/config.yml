@@ -43,6 +43,7 @@ jobs:
           command: apk add make
       - run:
           name: Packer build
+          no_output_timeout: 60m
           command: make -e all
       - run:
           name: Notify after build
