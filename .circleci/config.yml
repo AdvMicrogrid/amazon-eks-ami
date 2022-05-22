@@ -59,7 +59,7 @@ workflows:
           context: CICD
           requires:
             - validate
-#          filters:
-#            branches:
-#              only:
-#                - master
+          filters:
+            branches:
+              only:
+                - master
