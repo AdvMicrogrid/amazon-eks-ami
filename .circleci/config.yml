@@ -98,3 +98,6 @@ workflows:
                 - master
       - send_to_dd:
           context: CICD
+          requires:
+            - validate
+            - build
