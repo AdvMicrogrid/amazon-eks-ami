@@ -70,7 +70,7 @@ jobs:
           command: |
             cd aws_ecr_ami
             source metadata.env
-            /usr/local/bin/datadog-ci git-metadata upload
+            /usr/local/bin/datadog-ci junit upload --service ${CIRCLE_PROJECT_REPONAME}
           environment:
             DATADOG_SITE: datadoghq.com
             DD_ENV: ci
