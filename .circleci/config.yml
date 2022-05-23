@@ -27,9 +27,9 @@ jobs:
             git log --format='export DD_GIT_COMMIT_COMMITTER_NAME="%cn"' -n 1 >> metadata.env
             git log --format='export DD_GIT_COMMIT_MESSAGE="%s"' -n 1 >> metadata.env
       - persist_to_workspace:
-          root: "."
+          root: "~"
           paths:
-            - metadata.env
+            - ~/aws_ecr_ami
   validate:
     # job to validate aws ecr ami image
     docker:
@@ -38,8 +38,6 @@ jobs:
     steps:
       - attach_workspace:
             at: .
-      - checkout:
-          path: ~/aws_ecr_ami
       - run:
           name: Packer Validate
           command: make -e -j2 all-validate
@@ -51,8 +49,6 @@ jobs:
     steps:
       - attach_workspace:
             at: .
-      - checkout:
-          path: ~/aws_ecr_ami
       - run:
           name: Packer build
           # AWS sometimes take really long to finish ami build.
