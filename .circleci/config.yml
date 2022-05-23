@@ -61,15 +61,17 @@ jobs:
     docker:
       - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/datadog-ci:latest
     resource_class: small
+    working_directory: ~/aws_ecr_ami
     steps:
+      - checkout:
+          path: ~/aws_ecr_ami
       - attach_workspace:
-          at: .
+          at: ~/aws_ecr_ami2
       - run:
           name: Push metadata to datadog
           # NB! circleci *ignores entrypoints in docker containers*, you have to pass it explicitly
           command: |
-            cd aws_ecr_ami
-            source metadata.env
+            source ~/aws_ecr_ami2/metadata.env
             /usr/local/bin/datadog-ci git-metadata upload --repository-url ${CIRCLE_REPOSITORY_URL}
           environment:
             DATADOG_SITE: datadoghq.com
