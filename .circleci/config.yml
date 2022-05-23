@@ -69,10 +69,8 @@ jobs:
           # NB! circleci *ignores entrypoints in docker containers*, you have to pass it explicitly
           command: |
             cd aws_ecr_ami
-            pwd
-            ls -al
             source metadata.env
-            /usr/local/bin/datadog-ci git-metadata upload
+            /usr/local/bin/datadog-ci git-metadata upload --repository-url ${CIRCLE_REPOSITORY_URL}
           environment:
             DATADOG_SITE: datadoghq.com
             DD_ENV: ci
