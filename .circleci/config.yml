@@ -54,7 +54,6 @@ jobs:
           name: Push metadata to datadog
           # NB! circleci *ignores entrypoints in docker containers*, you have to pass it explicitly
           command: |
-#            apk add git
             cd aws_ecr_ami
             echo "export DD_GIT_BRANCH=${CIRCLE_BRANCH}" >> metadata.env
             echo "export DD_GIT_COMMIT_SHA=${CIRCLE_SHA1}" >> metadata.env
