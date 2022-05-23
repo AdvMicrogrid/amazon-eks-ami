@@ -67,7 +67,8 @@ jobs:
             git log --format='export DD_GIT_COMMIT_COMMITTER_EMAIL="%ce"' -n 1 >> metadata.env
             git log --format='export DD_GIT_COMMIT_COMMITTER_NAME="%cn"' -n 1 >> metadata.env
             git log --format='export DD_GIT_COMMIT_MESSAGE="%s"' -n 1 >> metadata.env
-            /usr/local/bin/datadog-ci git-metadata upload --repository-url ${CIRCLE_REPOSITORY_URL}
+            touch /tmp/workspace/results.xml
+            /usr/local/bin/datadog-ci junit upload --service ${CIRCLE_PROJECT_REPONAME} /tmp/workspace/results.xml
           environment:
             DATADOG_SITE: datadoghq.com
             DD_ENV: ci
