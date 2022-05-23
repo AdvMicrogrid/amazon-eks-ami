@@ -69,11 +69,14 @@ jobs:
           # NB! circleci *ignores entrypoints in docker containers*, you have to pass it explicitly
           command: |
             cd aws_ecr_ami
+            pwd
+            ls -al
             source metadata.env
-            /usr/local/bin/datadog-ci junit upload --service ${CIRCLE_PROJECT_REPONAME}
+            /usr/local/bin/datadog-ci git-metadata upload
           environment:
             DATADOG_SITE: datadoghq.com
             DD_ENV: ci
+          when: always
 workflows:
   aws_eks_ami:
     jobs:
