@@ -39,6 +39,9 @@ jobs:
       - attach_workspace:
             at: .
       - run:
+          name: debug path location
+          command: pwd
+      - run:
           name: Packer Validate
           command: make -e -j2 all-validate
   build:
