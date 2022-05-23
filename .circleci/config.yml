@@ -34,16 +34,12 @@ jobs:
     # job to validate aws ecr ami image
     docker:
       - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci-packer:latest
-    working_directory: ~/aws_ecr_ami
     steps:
       - attach_workspace:
             at: .
       - run:
-          name: debug path location
-          command: pwd
-      - run:
           name: Packer Validate
-          command: make -e -j2 all-validate
+          command: cd aws_ecr_ami && make -e -j2 all-validate
   build:
     # job to build aws ecr ami image
     docker:
