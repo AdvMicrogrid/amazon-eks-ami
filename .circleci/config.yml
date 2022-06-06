@@ -135,6 +135,20 @@ jobs:
           no_output_timeout: 60m
           command: cd aws_ecr_ami && make -e -j2 all
       - dd-agent/stop
+  mock-test:
+    # Mock test to trigger integration with datadog
+    docker:
+      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
+    steps:
+      - attach_workspace:
+            at: .
+      - dd-agent/setup
+      - run:
+          name: Dummy test
+          command: |
+            pip3 install pytest
+            DD_SERVICE=${DD_SERVICE} DD_ENV=${DD_ENV} pytest . --ddtrace
+      - dd-agent/stop
 workflows:
   aws_eks_ami:
     jobs:
@@ -152,3 +166,8 @@ workflows:
             branches:
               only:
                 - master
+      - mock-test:
+          context: CICD
+          requires:
+            - validate
+            - build
