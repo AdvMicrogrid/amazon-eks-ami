@@ -3,21 +3,6 @@ version: 2.1
 # Inline dd agent orb definition
 orbs:
   dd-agent:
-    executors:
-      base:
-        parameters:
-          image:
-            description: Image that will be used in orb
-            type: string
-            default: "cimg/base"
-          tag:
-            description: Tag of docker image that will be used in orb
-            type: string
-            default: "2022.05"
-        docker:
-          - image: <<parameters.image>>:<<parameters.tag>>
-    setup:
-      executor: base
     commands:
       setup:
         description: "Installs and starts the Datadog Agent"
@@ -108,7 +93,7 @@ jobs:
   prepare_env:
     # job to prepare build environment
     docker:
-      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci-packer:latest
+      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
     working_directory: ~/aws_ecr_ami
     steps:
       - checkout:
@@ -125,7 +110,7 @@ jobs:
   validate:
     # job to validate aws ecr ami image
     docker:
-      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci-packer:latest
+      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
     steps:
       - attach_workspace:
             at: .
@@ -137,7 +122,7 @@ jobs:
   build:
     # job to build aws ecr ami image
     docker:
-      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci-packer:latest
+      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
     steps:
       - attach_workspace:
             at: .
