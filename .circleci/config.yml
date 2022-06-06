@@ -107,6 +107,7 @@ jobs:
     # job to prepare build environment
     docker:
       - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci-packer:latest
+      - image: cimg/base:2022.05
     working_directory: ~/aws_ecr_ami
     steps:
       - checkout:
