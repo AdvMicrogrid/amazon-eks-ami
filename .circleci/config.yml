@@ -145,7 +145,9 @@ jobs:
       - dd-agent/setup
       - run:
           name: Dummy test
-          command: DD_SERVICE=${DD_SERVICE} DD_ENV=${DD_ENV} pytest test.py --ddtrace
+          command: |
+            sudo pip install pytest ddtrace
+            DD_SERVICE=${DD_SERVICE} DD_ENV=${DD_ENV} pytest test.py --ddtrace
       - dd-agent/stop
 workflows:
   aws_eks_ami:
