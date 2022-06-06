@@ -23,11 +23,6 @@ orbs:
             default: "datadoghq.com"
         steps:
           - run:
-              name: Prepare requirements
-              command: |
-                apk update
-                apk add curl
-          - run:
               environment:
                 PARAM_DD_API_KEY: <<parameters.api_key>>
                 PARAM_DD_AGENT_MAJOR_VERSION: <<parameters.agent_major_version>>
@@ -144,6 +139,8 @@ workflows:
           context: CICD
       - prepare_env:
           context: CICD
+          requires:
+            - dd-agebt/setup
       - validate:
           context: CICD
           requires:
@@ -158,3 +155,6 @@ workflows:
                 - master
       - dd-agent/stop:
           context: CICD
+          requires:
+            - validate
+            - build
