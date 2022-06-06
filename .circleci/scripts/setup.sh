@@ -1,4 +1,3 @@
-
 Install() {
     PARAM_DD_API_KEY=$(eval echo "\$$PARAM_DD_API_KEY")
 
