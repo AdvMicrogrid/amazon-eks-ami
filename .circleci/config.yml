@@ -140,7 +140,7 @@ workflows:
       - prepare_env:
           context: CICD
           requires:
-            - dd-agebt/setup
+            - dd-agent/setup
       - validate:
           context: CICD
           requires:
