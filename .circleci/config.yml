@@ -146,7 +146,9 @@ jobs:
       - run:
           name: Dummy test
           command: |
-            sudo pip install pytest ddtrace
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install pytest ddtrace
             DD_SERVICE=${DD_SERVICE} DD_ENV=${DD_ENV} pytest test.py --ddtrace
       - dd-agent/stop
 workflows:
