@@ -3,10 +3,21 @@ version: 2.1
 # Inline dd agent orb definition
 orbs:
   dd-agent:
-    jobs:
-      setup:
+    executors:
+      base:
+        parameters:
+          image:
+            description: Image that will be used in orb
+            type: string
+            default: "cimg/base"
+          tag:
+            description: Tag of docker image that will be used in orb
+            type: string
+            default: "2022.05"
         docker:
-          - image: cimg/base:2022.05
+          - image: <<parameters.image>>:<<parameters.tag>>
+    commands:
+      setup:
         description: "Installs and starts the Datadog Agent"
         parameters:
           api_key:
@@ -70,8 +81,6 @@ orbs:
                     Install
                 fi
       stop:
-        docker:
-          - image: cimg/base:2022.05
         description: "Gracefully stop the Datadog Agent"
         steps:
           - run:
@@ -101,6 +110,7 @@ jobs:
     steps:
       - checkout:
           path: ~/aws_ecr_ami
+      - dd-agent/setup
       - run:
           name: Prepare env for build
           command: echo 'export BUILD_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-$(git rev-parse --verify HEAD | cut -c1-8)"' >> ${BASH_ENV}
@@ -108,6 +118,7 @@ jobs:
           root: "~"
           paths:
             - aws_ecr_ami
+      - dd-agent/stop
   validate:
     # job to validate aws ecr ami image
     docker:
@@ -115,9 +126,11 @@ jobs:
     steps:
       - attach_workspace:
             at: .
+      - dd-agent/setup
       - run:
           name: Packer Validate
           command: cd aws_ecr_ami && make -e -j2 all-validate
+      - dd-agent/stop
   build:
     # job to build aws ecr ami image
     docker:
@@ -125,6 +138,7 @@ jobs:
     steps:
       - attach_workspace:
             at: .
+      - dd-agent/setup
       - run:
           name: Packer build
           # AWS sometimes take really long to finish ami build.
@@ -132,15 +146,12 @@ jobs:
           # so we must extend that timeout limit to be sure that ami build can pass
           no_output_timeout: 60m
           command: cd aws_ecr_ami && make -e -j2 all
+      - dd-agent/stop
 workflows:
   aws_eks_ami:
     jobs:
-      - dd-agent/setup:
-          context: CICD
       - prepare_env:
           context: CICD
-          requires:
-            - dd-agent/setup
       - validate:
           context: CICD
           requires:
@@ -153,8 +164,3 @@ workflows:
             branches:
               only:
                 - master
-      - dd-agent/stop:
-          context: CICD
-          requires:
-            - validate
-            - build
