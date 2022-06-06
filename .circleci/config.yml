@@ -1,5 +1,47 @@
 version: 2.1
 
+# Inline dd agent orb definition
+orbs:
+  dd-agent:
+    orbs:
+      python: circleci/python@2.0.3
+    jobs:
+      setup:
+        executor: python/default
+        description: "Installs and starts the Datadog Agent"
+        parameters:
+          api_key:
+            type: env_var_name
+            description: The name of the environmental variable containing the API key
+            default: DD_API_KEY
+          agent_major_version:
+            type: string
+            description: The major version of the agent to use
+            default: "7"
+          site:
+            type: string
+            description: The datadog site to send data to. If the environment variable DD_SITE is set that will take preference.
+            default: "datadoghq.com"
+        steps:
+          - run:
+              environment:
+                PARAM_DD_API_KEY: <<parameters.api_key>>
+                PARAM_DD_AGENT_MAJOR_VERSION: <<parameters.agent_major_version>>
+                PARAM_DD_SITE: <<parameters.site>>
+              name: Install and start the Datadog Agent
+              working_directory: /tmp
+              command: <<include(scripts/setup.sh)>>
+      stop:
+        executor: python/default
+        description: "Gracefully stop the Datadog Agent"
+        parameters:
+        steps:
+          - run:
+              when: always
+              name: Gracefully stop the Datadog Agent
+              command: <<include(scripts/stop.sh)>>
+
+# workflow jobs definition
 jobs:
   prepare_env:
     # job to prepare build environment
@@ -12,6 +54,7 @@ jobs:
       - run:
           name: Prepare env for build
           command: echo 'export BUILD_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-$(git rev-parse --verify HEAD | cut -c1-8)"' >> ${BASH_ENV}
+      - dd-agent/setup
       - persist_to_workspace:
           root: "~"
           paths:
@@ -47,28 +90,7 @@ jobs:
     steps:
       - attach_workspace:
             at: .
-      - run:
-          name: Push metadata to datadog
-          command: |
-            apk add git
-            cd aws_ecr_ami
-            echo "export DD_GIT_BRANCH=${CIRCLE_BRANCH}" >> metadata.env
-            echo "export DD_GIT_COMMIT_SHA=${CIRCLE_SHA1}" >> metadata.env
-            echo "export DD_GIT_REPOSITORY_URL=${CIRCLE_REPOSITORY_URL}" >> metadata.env
-            echo "export DD_GIT_TAG=${CIRCLE_BRANCH}_${CIRCLE_SHA1}" >> metadata.env
-            git log --format='export DD_GIT_COMMIT_AUTHOR_DATE="%aD"' -n 1 >> metadata.env
-            git log --format='export DD_GIT_COMMIT_AUTHOR_EMAIL="%ae"' -n 1 >> metadata.env
-            git log --format='export DD_GIT_COMMIT_AUTHOR_NAME="%an"' -n 1 >> metadata.env
-            git log --format='export DD_GIT_COMMIT_COMMITTER_DATE="%cD"' -n 1 >> metadata.env
-            git log --format='export DD_GIT_COMMIT_COMMITTER_EMAIL="%ce"' -n 1 >> metadata.env
-            git log --format='export DD_GIT_COMMIT_COMMITTER_NAME="%cn"' -n 1 >> metadata.env
-            git log --format='export DD_GIT_COMMIT_MESSAGE="%s"' -n 1 >> metadata.env
-            touch results.xml
-            /usr/local/bin/datadog-ci junit upload --service ${CIRCLE_PROJECT_REPONAME} results.xml
-          environment:
-            DATADOG_SITE: datadoghq.com
-            DD_ENV: ci
-          when: always
+      - dd-agent/stop
 workflows:
   aws_eks_ami:
     jobs:
