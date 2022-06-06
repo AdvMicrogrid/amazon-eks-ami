@@ -146,7 +146,7 @@ jobs:
       - run:
           name: Dummy test
           command: |
-            pip3 install pytest
+            pip3 install pytest ddtrace
             DD_SERVICE=${DD_SERVICE} DD_ENV=${DD_ENV} pytest . --ddtrace
       - dd-agent/stop
 workflows:
