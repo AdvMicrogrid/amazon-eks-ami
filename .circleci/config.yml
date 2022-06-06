@@ -3,10 +3,10 @@ version: 2.1
 # Inline dd agent orb definition
 orbs:
   dd-agent:
-    docker:
-      - image: cimg/base:2022.05
-    commands:
+    jobs:
       setup:
+        docker:
+          - image: cimg/base:2022.05
         description: "Installs and starts the Datadog Agent"
         parameters:
           api_key:
@@ -75,6 +75,8 @@ orbs:
                     Install
                 fi
       stop:
+        docker:
+          - image: cimg/base:2022.05
         description: "Gracefully stop the Datadog Agent"
         steps:
           - run:
