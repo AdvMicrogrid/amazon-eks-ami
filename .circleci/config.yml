@@ -5,7 +5,7 @@ orbs:
   dd-agent:
     orbs:
       python: circleci/python@2.0.3
-    jobs:
+    commands:
       setup:
         executor: python/default
         description: "Installs and starts the Datadog Agent"
