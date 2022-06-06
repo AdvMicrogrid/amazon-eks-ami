@@ -25,8 +25,8 @@ orbs:
           - run:
               name: Prepare requirements
               command: |
-                apt get update
-                apt install -y curl
+                apt-get update
+                apt-get install -y curl
           - run:
               environment:
                 PARAM_DD_API_KEY: <<parameters.api_key>>
