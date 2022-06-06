@@ -3,8 +3,8 @@ version: 2.1
 # Inline dd agent orb definition
 orbs:
   dd-agent:
-    orbs:
-      python: circleci/python@2.0.3
+    docker:
+      - image: cimg/base:2022.05
     commands:
       setup:
         description: "Installs and starts the Datadog Agent"
