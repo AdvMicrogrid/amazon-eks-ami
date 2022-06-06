@@ -107,7 +107,6 @@ jobs:
       - run:
           name: Prepare env for build
           command: echo 'export BUILD_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-$(git rev-parse --verify HEAD | cut -c1-8)"' >> ${BASH_ENV}
-      - dd-agent/setup
       - persist_to_workspace:
           root: "~"
           paths:
@@ -136,17 +135,11 @@ jobs:
           # so we must extend that timeout limit to be sure that ami build can pass
           no_output_timeout: 60m
           command: cd aws_ecr_ami && make -e -j2 all
-  send_to_dd:
-    docker:
-      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/datadog-ci:latest
-    resource_class: small
-    steps:
-      - attach_workspace:
-            at: .
-      - dd-agent/stop
 workflows:
   aws_eks_ami:
     jobs:
+      - dd-agent/setup:
+          context: CICD
       - prepare_env:
           context: CICD
       - validate:
@@ -161,8 +154,5 @@ workflows:
             branches:
               only:
                 - master
-      - send_to_dd:
+      - dd-agent/stop:
           context: CICD
-          requires:
-            - validate
-            - build
