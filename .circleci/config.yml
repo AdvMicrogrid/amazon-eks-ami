@@ -10,7 +10,7 @@ orbs:
           api_key:
             type: env_var_name
             description: The name of the environmental variable containing the API key
-            default: DATADOG_API_KEY
+            default: DD_API_KEY
           agent_major_version:
             type: string
             description: The major version of the agent to use
