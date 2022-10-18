@@ -119,7 +119,7 @@ jobs:
           name: Prepare env for build
           command: |
             NORMALIZED_BRANCH_NAME=$(echo ${CIRCLE_BRANCH} | sed 's/[^a-zA-Z0-9]/-/g' | cut -c 1-50)
-            echo 'export BUILD_TAG="${NORMALIZED_BRANCH_NAME}-${CIRCLE_BUILD_NUM}-${CIRCLE_SHA1::7}"' >> ${BASH_ENV}
+            echo "export BUILD_TAG=${NORMALIZED_BRANCH_NAME}-${CIRCLE_BUILD_NUM}-${CIRCLE_SHA1::7}" >> ${BASH_ENV}
       - run: echo $BUILD_TAG
       - run:
           name: Packer Validate
