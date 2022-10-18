@@ -110,7 +110,7 @@ jobs:
             at: .
       - when:
           condition:
-            equal: ["feat/DO-1609_build_amis_on_different_accounts", << pipeline.git.branch >>]
+            equal: ["feat/DO-1609_build_amis_on_different_accountsX", << pipeline.git.branch >>]
           steps:
             - run:
                 name: Setup environment variables for Packer
