@@ -162,7 +162,9 @@ workflows:
       - prepare_env:
           context: CICD
       - validate:
-          context: CICD
+          context:
+            - CICD
+            - AWS
           requires:
             - prepare_env
       - build:
