@@ -45,7 +45,7 @@ T_RESET := \e[0m
 .PHONY: all 1.18 1.19 1.20 1.21 1.22
 all: 1.20-build
 
-all-validate: 1.19-validate 1.20-validate
+all-validate: 1.20-validate
 
 .PHONY: k8s
 k8s: validate
