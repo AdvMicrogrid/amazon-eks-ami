@@ -193,7 +193,9 @@ workflows:
           requires:
             - prepare_env
       - build:
-          context: CICD
+          context:
+            - CICD
+            - AWS
           requires:
             - validate
 #          filters:
