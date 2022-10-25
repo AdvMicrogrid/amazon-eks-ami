@@ -108,25 +108,6 @@ jobs:
     steps:
       - attach_workspace:
             at: .
-      - when:
-          condition:
-            equal: ["feat/DO-1609_build_amis_on_different_accounts", << pipeline.git.branch >>]
-          steps:
-            - run:
-                name: Setup environment variables for Packer
-                command: | 
-                  echo "Setup environment variables for Packer"
-                  echo "export AWS_ACCESS_KEY_ID=${aws_circleci_operations_dev_id}" >> ${BASH_ENV}
-                  echo "export AWS_SECRET_ACCESS_KEY=${aws_circleci_operations_dev_key}" >> ${BASH_ENV}
-      - run:
-          name: Prepare env for build
-          command: |
-            NORMALIZED_BRANCH_NAME=$(echo ${CIRCLE_BRANCH} | sed 's/[^a-zA-Z0-9]/-/g' | cut -c 1-50)
-            echo "export BUILD_TAG=${NORMALIZED_BRANCH_NAME}-${CIRCLE_BUILD_NUM}-${CIRCLE_SHA1::7}" >> ${BASH_ENV}
-      - run:
-          name: verify variables
-          command: |
-            echo "$BUILD_TAG" & echo "${AWS_ACCESS_KEY_ID: -3}"
       - run:
           name: Packer Validate
           command: cd aws_ecr_ami && make -e -j2 all-validate
@@ -143,7 +124,7 @@ jobs:
             equal: [ "feat/DO-1609_build_amis_on_different_accounts", << pipeline.git.branch >> ]
           steps:
             - run:
-                name: Setup environment variables for Packer
+                name: Setup AWS environment variables for Packer to push AMI to operations-dev account
                 command: |
                   echo "Setup environment variables for Packer"
                   echo "export AWS_ACCESS_KEY_ID=${aws_circleci_operations_dev_id}" >> ${BASH_ENV}
@@ -160,7 +141,7 @@ jobs:
       - run:
           name: Packer build
           # AWS sometimes take really long to finish ami build.
-          # By default, Crircle CI have 10 minutes timeout without response,
+          # By default, Circle CI have 10 minutes timeout without response,
           # so we must extend that timeout limit to be sure that ami build can pass
           no_output_timeout: 60m
           command: cd aws_ecr_ami && make -e -j2 all
@@ -198,12 +179,13 @@ workflows:
             - AWS
           requires:
             - validate
-#          filters:
-#            branches:
-#              only:
-#                - master
-#      - mock-test:
-#          context: CICD
-#          requires:
-#            - validate
-#            - build
+          filters:
+            branches:
+              only:
+                - master
+                - "feat/DO-1609_build_amis_on_different_accounts"
+      - mock-test:
+          context: CICD
+          requires:
+            - validate
+            - build
