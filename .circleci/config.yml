@@ -118,7 +118,7 @@ jobs:
     steps:
       - attach_workspace:
             at: .
-      - dd-agent/setup
+#      - dd-agent/setup
       - when:
           condition:
             equal: [ "feat/DO-1609_build_amis_on_different_accounts", << pipeline.git.branch >> ]
@@ -145,7 +145,7 @@ jobs:
           # so we must extend that timeout limit to be sure that ami build can pass
           no_output_timeout: 60m
           command: cd aws_ecr_ami && make -e -j2 all
-      - dd-agent/stop
+#      - dd-agent/stop
   mock-test:
     # Mock test to trigger integration with datadog
     docker:
