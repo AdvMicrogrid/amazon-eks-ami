@@ -87,7 +87,7 @@
         "creator": "{{user `creator`}}"
       },
       "vpc_id": "vpc-05383af545d6682e8",
-      "subnet_id": "subnet-0b24aa17af8ab1cac",
+      "subnet_id": "subnet-0048fe55978e166d9",
       "tags": {
         "Name": "{{user `ami_name`}}",
         "created": "{{timestamp}}",
