@@ -84,13 +84,21 @@
       "encrypt_boot": "{{user `encrypted`}}",
       "kms_key_id": "{{user `kms_key_id`}}",
       "run_tags": {
-        "creator": "{{user `creator`}}"
+        "creator": "{{user `creator`}}",
+        "Creator": "Packer"
+      },
+      "run_volume_tags":{
+        "Creator": "Packer"
+      },
+      "snapshot_tags": {
+        "Creator": "Packer"
       },
       "vpc_id": "vpc-05383af545d6682e8",
       "subnet_id": "subnet-0048fe55978e166d9",
       "tags": {
         "Name": "{{user `ami_name`}}",
         "created": "{{timestamp}}",
+        "Creator": "Packer",
         "docker_version": "{{ user `docker_version`}}",
         "containerd_version": "{{ user `containerd_version`}}",
         "source_ami_id": "{{ user `source_ami_id`}}",
