@@ -33,7 +33,7 @@
     "subnet_id": "",
     "remote_folder": "",
     "launch_block_device_mappings_volume_size": "4",
-    "ami_users": "",
+    "ami_users": "323069057441",
     "additional_yum_repos": "",
     "sonobuoy_e2e_registry": ""
   },
