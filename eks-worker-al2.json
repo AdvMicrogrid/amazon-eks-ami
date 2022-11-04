@@ -4,7 +4,7 @@
     "ami_name": null,
     "creator": "{{env `USER`}}",
     "encrypted": "false",
-    "kms_key_id": "",
+    "kms_key_id": "arn:aws:kms:us-west-2:221734559126:key/80ada54a-bed3-4361-a41d-8bee0730b756",
     "aws_access_key_id": "{{env `AWS_ACCESS_KEY_ID`}}",
     "aws_secret_access_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
     "aws_session_token": "{{env `AWS_SESSION_TOKEN`}}",
