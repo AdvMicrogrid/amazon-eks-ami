@@ -11,6 +11,21 @@ PACKER_BINARY = docker run -v /mnt/credentials:/root/.aws/credentials \
 	876270261134.dkr.ecr.us-west-2.amazonaws.com/devops/packer:1.6.1
 PACKER_VARIABLES := aws_region ami_name binary_bucket_name binary_bucket_region kubernetes_version kubernetes_build_date kernel_version docker_version containerd_version runc_version cni_plugin_version source_ami_id source_ami_owners source_ami_filter_name arch instance_type security_group_id additional_yum_repos pull_cni_from_github sonobuoy_e2e_registry build_tag encrypted
 
+ifndef VPC_ID
+  $(error VPC_ID is undefined)
+endif
+
+ifndef SUBNET_ID
+  $(error SUBNET_ID is undefined)
+endif
+
+ifndef AMI_USERS
+  $(error AMI_USERS is undefined)
+endif
+
+ifndef KMS_KEY_ID
+  $(error KMS_KEY_ID is undefined)
+endif
 
 #PACKER_BINARY ?= packer
 #PACKER_VARIABLES := aws_region ami_name binary_bucket_name binary_bucket_region kubernetes_version kubernetes_build_date kernel_version docker_version containerd_version runc_version cni_plugin_version source_ami_id source_ami_owners source_ami_filter_name arch instance_type security_group_id additional_yum_repos pull_cni_from_github sonobuoy_e2e_registry
