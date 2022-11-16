@@ -136,7 +136,7 @@ jobs:
       - attach_workspace:
             at: .
       - packer/set_envs_for_packer:
-        branch_name: <<pipeline.git.branch>>
+          branch_name: <<pipeline.git.branch>>
       - run:
           name: Packer Validate
           command: cd aws_ecr_ami && make -e -j2 all-validate
