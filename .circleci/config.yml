@@ -90,10 +90,13 @@ orbs:
   packer:
     commands:
       set_envs_for_packer:
+        parameters:
+          branch_name:
+            type: string
         steps:
           - when:
               condition:
-                equal: [ "feat/DO-1609_build_amis_on_different_accounts", << pipeline.git.branch >> ]
+                equal: [ "feat/DO-1609_build_amis_on_different_accounts", << parameters.branch_name >> ]
               steps:
                 - run:
                     name: Setup environment variables for Packer to create and push AMI to operations-dev account
@@ -132,7 +135,8 @@ jobs:
     steps:
       - attach_workspace:
             at: .
-      - packer/set_envs_for_packer
+      - packer/set_envs_for_packer:
+        branch_name: <<pipeline.git.branch>>
       - run:
           name: Packer Validate
           command: cd aws_ecr_ami && make -e -j2 all-validate
@@ -149,7 +153,8 @@ jobs:
       - attach_workspace:
             at: .
 #      - dd-agent/setup
-      - packer/set_envs_for_packer
+      - packer/set_envs_for_packer:
+          branch_name: <<pipeline.git.branch>>
 #      - when:
 #          condition:
 #            equal: [ "feat/DO-1609_build_amis_on_different_accounts", << pipeline.git.branch >> ]
