@@ -108,7 +108,7 @@ jobs:
     environment:
       VPC_ID: doesnt_matter
       SUBNET_ID: doesnt_matter
-      KMS_KEY: doesnt_matter
+      KMS_KEY_ID: doesnt_matter
       AMI_USERS: doesnt_matter
     steps:
       - attach_workspace:
@@ -141,7 +141,7 @@ jobs:
                   echo "export AWS_SECRET_ACCESS_KEY=${aws_circleci_operations_dev_key}" >> ${BASH_ENV}
                   echo "export VPC_ID=${OPERATIONS_DEV_VPC_ID}" >> ${BASH_ENV}
                   echo "export SUBNET_ID=${OPERATIONS_DEV_SUBNET_ID}" >> ${BASH_ENV}
-                  echo "export KMS_KEY=${OPERATIONS_DEV_KMS_KEY}" >> ${BASH_ENV}
+                  echo "export KMS_KEY_ID=${OPERATIONS_DEV_KMS_KEY}" >> ${BASH_ENV}
       - run:
           name: Prepare env for build
           command: |
