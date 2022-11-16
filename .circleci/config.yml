@@ -90,19 +90,20 @@ orbs:
   packer:
     commands:
       set_envs_for_packer:
-        - when:
-            condition:
-              equal: [ "feat/DO-1609_build_amis_on_different_accounts", << pipeline.git.branch >> ]
-            steps:
-              - run:
-                  name: Setup environment variables for Packer to create and push AMI to operations-dev account
-                  command: |
-                    echo "Setup environment variables for Packer"
-                    echo "export AWS_ACCESS_KEY_ID=${aws_circleci_operations_dev_id}" >> ${BASH_ENV}
-                    echo "export AWS_SECRET_ACCESS_KEY=${aws_circleci_operations_dev_key}" >> ${BASH_ENV}
-                    echo "export VPC_ID=${OPERATIONS_DEV_VPC_ID}" >> ${BASH_ENV}
-                    echo "export SUBNET_ID=${OPERATIONS_DEV_SUBNET_ID}" >> ${BASH_ENV}
-                    echo "export KMS_KEY_ID=${OPERATIONS_DEV_KMS_KEY}" >> ${BASH_ENV}
+        steps:
+          - when:
+              condition:
+                equal: [ "feat/DO-1609_build_amis_on_different_accounts", << pipeline.git.branch >> ]
+              steps:
+                - run:
+                    name: Setup environment variables for Packer to create and push AMI to operations-dev account
+                    command: |
+                      echo "Setup environment variables for Packer"
+                      echo "export AWS_ACCESS_KEY_ID=${aws_circleci_operations_dev_id}" >> ${BASH_ENV}
+                      echo "export AWS_SECRET_ACCESS_KEY=${aws_circleci_operations_dev_key}" >> ${BASH_ENV}
+                      echo "export VPC_ID=${OPERATIONS_DEV_VPC_ID}" >> ${BASH_ENV}
+                      echo "export SUBNET_ID=${OPERATIONS_DEV_SUBNET_ID}" >> ${BASH_ENV}
+                      echo "export KMS_KEY_ID=${OPERATIONS_DEV_KMS_KEY}" >> ${BASH_ENV}
         
 
 # workflow jobs definition
