@@ -107,6 +107,7 @@ orbs:
                       echo "export VPC_ID=${OPERATIONS_DEV_VPC_ID}" >> ${BASH_ENV}
                       echo "export SUBNET_ID=${OPERATIONS_DEV_SUBNET_ID}" >> ${BASH_ENV}
                       echo "export KMS_KEY_ID=${OPERATIONS_DEV_KMS_KEY}" >> ${BASH_ENV}
+                      echo "export AMI_USERS=${OPERATIONS_DEV_AMI_USERS}" >> ${BASH_ENV}
         
 
 # workflow jobs definition
