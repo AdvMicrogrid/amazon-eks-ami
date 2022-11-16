@@ -105,6 +105,11 @@ jobs:
     # job to validate aws ecr ami image
     docker:
       - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
+    environment:
+      VPC_ID: doesnt_matter
+      SUBNET_ID: doesnt_matter
+      KMS_KEY: doesnt_matter
+      AMI_USERS: doesnt_matter
     steps:
       - attach_workspace:
             at: .
