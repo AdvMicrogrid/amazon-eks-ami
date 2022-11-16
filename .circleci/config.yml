@@ -87,6 +87,24 @@ orbs:
                     StopAgent
                 fi
 
+  packer:
+    commands:
+      set_envs_for_packer:
+        - when:
+            condition:
+              equal: [ "feat/DO-1609_build_amis_on_different_accounts", << pipeline.git.branch >> ]
+            steps:
+              - run:
+                  name: Setup environment variables for Packer to create and push AMI to operations-dev account
+                  command: |
+                    echo "Setup environment variables for Packer"
+                    echo "export AWS_ACCESS_KEY_ID=${aws_circleci_operations_dev_id}" >> ${BASH_ENV}
+                    echo "export AWS_SECRET_ACCESS_KEY=${aws_circleci_operations_dev_key}" >> ${BASH_ENV}
+                    echo "export VPC_ID=${OPERATIONS_DEV_VPC_ID}" >> ${BASH_ENV}
+                    echo "export SUBNET_ID=${OPERATIONS_DEV_SUBNET_ID}" >> ${BASH_ENV}
+                    echo "export KMS_KEY_ID=${OPERATIONS_DEV_KMS_KEY}" >> ${BASH_ENV}
+        
+
 # workflow jobs definition
 jobs:
   prepare_env:
@@ -106,13 +124,14 @@ jobs:
     docker:
       - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
     environment:
-      VPC_ID: doesnt_matter
-      SUBNET_ID: doesnt_matter
-      KMS_KEY_ID: doesnt_matter
-      AMI_USERS: doesnt_matter
+      OPERATIONS_DEV_VPC_ID: vpc-05383af545d6682e8
+      OPERATIONS_DEV_SUBNET_ID: subnet-0048fe55978e166d9
+      OPERATIONS_DEV_KMS_KEY: 3ca29447-7848-4f4d-9c1e-51b2de62b5fe
+      OPERATIONS_DEV_AMI_USERS: 323069057441
     steps:
       - attach_workspace:
             at: .
+      - packer/set_envs_for_packer
       - run:
           name: Packer Validate
           command: cd aws_ecr_ami && make -e -j2 all-validate
@@ -129,21 +148,22 @@ jobs:
       - attach_workspace:
             at: .
 #      - dd-agent/setup
-      - when:
-          condition:
-            equal: [ "feat/DO-1609_build_amis_on_different_accounts", << pipeline.git.branch >> ]
-          steps:
-            - run:
-                name: Setup environment variables for Packer to create and push AMI to operations-dev account
-                command: |
-                  echo "Setup environment variables for Packer"
-                  echo "export AWS_ACCESS_KEY_ID=${aws_circleci_operations_dev_id}" >> ${BASH_ENV}
-                  echo "export AWS_SECRET_ACCESS_KEY=${aws_circleci_operations_dev_key}" >> ${BASH_ENV}
-                  echo "export VPC_ID=${OPERATIONS_DEV_VPC_ID}" >> ${BASH_ENV}
-                  echo "export SUBNET_ID=${OPERATIONS_DEV_SUBNET_ID}" >> ${BASH_ENV}
-                  echo "export KMS_KEY_ID=${OPERATIONS_DEV_KMS_KEY}" >> ${BASH_ENV}
+      - packer/set_envs_for_packer
+#      - when:
+#          condition:
+#            equal: [ "feat/DO-1609_build_amis_on_different_accounts", << pipeline.git.branch >> ]
+#          steps:
+#            - run:
+#                name: Setup environment variables for Packer to create and push AMI to operations-dev account
+#                command: |
+#                  echo "Setup environment variables for Packer"
+#                  echo "export AWS_ACCESS_KEY_ID=${aws_circleci_operations_dev_id}" >> ${BASH_ENV}
+#                  echo "export AWS_SECRET_ACCESS_KEY=${aws_circleci_operations_dev_key}" >> ${BASH_ENV}
+#                  echo "export VPC_ID=${OPERATIONS_DEV_VPC_ID}" >> ${BASH_ENV}
+#                  echo "export SUBNET_ID=${OPERATIONS_DEV_SUBNET_ID}" >> ${BASH_ENV}
+#                  echo "export KMS_KEY_ID=${OPERATIONS_DEV_KMS_KEY}" >> ${BASH_ENV}
       - run:
-          name: Prepare env for build
+          name: Prepare BUILD_TAG env
           command: |
             NORMALIZED_BRANCH_NAME=$(echo ${CIRCLE_BRANCH} | sed 's/[^a-zA-Z0-9]/-/g' | cut -c 1-50)
             echo "export BUILD_TAG=${NORMALIZED_BRANCH_NAME}-${CIRCLE_BUILD_NUM}-${CIRCLE_SHA1::7}" >> ${BASH_ENV}
@@ -159,22 +179,22 @@ jobs:
           no_output_timeout: 60m
           command: cd aws_ecr_ami && make -e -j2 all
 #      - dd-agent/stop
-  mock-test:
-    # Mock test to trigger integration with datadog
-    docker:
-      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
-    steps:
-      - attach_workspace:
-            at: .
-      - dd-agent/setup
-      - run:
-          name: Dummy test
-          command: |
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install pytest ddtrace
-            DD_SERVICE=${DD_SERVICE} DD_ENV=${DD_ENV} pytest test.py --ddtrace
-      - dd-agent/stop
+#  mock-test:
+#    # Mock test to trigger integration with datadog
+#    docker:
+#      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
+#    steps:
+#      - attach_workspace:
+#            at: .
+#      - dd-agent/setup
+#      - run:
+#          name: Dummy test
+#          command: |
+#            python3 -m venv venv
+#            source venv/bin/activate
+#            pip install pytest ddtrace
+#            DD_SERVICE=${DD_SERVICE} DD_ENV=${DD_ENV} pytest test.py --ddtrace
+#      - dd-agent/stop
 workflows:
   aws_eks_ami:
     jobs:
@@ -197,8 +217,8 @@ workflows:
               only:
                 - master
                 - "feat/DO-1609_build_amis_on_different_accounts"
-      - mock-test:
-          context: CICD
-          requires:
-            - validate
-            - build
+#      - mock-test:
+#          context: CICD
+#          requires:
+#            - validate
+#            - build
