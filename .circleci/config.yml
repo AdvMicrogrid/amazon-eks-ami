@@ -132,7 +132,7 @@ jobs:
       OPERATIONS_DEV_VPC_ID: vpc-05383af545d6682e8
       OPERATIONS_DEV_SUBNET_ID: subnet-0048fe55978e166d9
       OPERATIONS_DEV_KMS_KEY: 3ca29447-7848-4f4d-9c1e-51b2de62b5fe
-      OPERATIONS_DEV_AMI_USERS: 323069057441
+      OPERATIONS_DEV_AMI_USERS: "323069057441"
     steps:
       - attach_workspace:
             at: .
@@ -141,6 +141,10 @@ jobs:
       - run:
           name: Packer Validate
           command: cd aws_ecr_ami && make -e -j2 all-validate
+      - run:
+          name: verify variables
+          command: |
+            echo "$BUILD_TAG" & echo "${AWS_ACCESS_KEY_ID: -3}"
   build:
     # job to build aws ecr ami image
     docker:
@@ -149,26 +153,13 @@ jobs:
       OPERATIONS_DEV_VPC_ID: vpc-05383af545d6682e8
       OPERATIONS_DEV_SUBNET_ID: subnet-0048fe55978e166d9
       OPERATIONS_DEV_KMS_KEY: 3ca29447-7848-4f4d-9c1e-51b2de62b5fe
-      OPERATIONS_DEV_AMI_USERS: 323069057441
+      OPERATIONS_DEV_AMI_USERS: "323069057441"
     steps:
       - attach_workspace:
             at: .
 #      - dd-agent/setup
       - packer/set_envs_for_packer:
           branch_name: <<pipeline.git.branch>>
-#      - when:
-#          condition:
-#            equal: [ "feat/DO-1609_build_amis_on_different_accounts", << pipeline.git.branch >> ]
-#          steps:
-#            - run:
-#                name: Setup environment variables for Packer to create and push AMI to operations-dev account
-#                command: |
-#                  echo "Setup environment variables for Packer"
-#                  echo "export AWS_ACCESS_KEY_ID=${aws_circleci_operations_dev_id}" >> ${BASH_ENV}
-#                  echo "export AWS_SECRET_ACCESS_KEY=${aws_circleci_operations_dev_key}" >> ${BASH_ENV}
-#                  echo "export VPC_ID=${OPERATIONS_DEV_VPC_ID}" >> ${BASH_ENV}
-#                  echo "export SUBNET_ID=${OPERATIONS_DEV_SUBNET_ID}" >> ${BASH_ENV}
-#                  echo "export KMS_KEY_ID=${OPERATIONS_DEV_KMS_KEY}" >> ${BASH_ENV}
       - run:
           name: Prepare BUILD_TAG env
           command: |
@@ -177,7 +168,7 @@ jobs:
       - run:
           name: verify variables
           command: |
-            echo "$BUILD_TAG" & echo "${AWS_ACCESS_KEY_ID: -3}"
+            echo "AMI_USERS"
       - run:
           name: Packer build
           # AWS sometimes take really long to finish ami build.
@@ -213,17 +204,17 @@ workflows:
             - AWS
           requires:
             - prepare_env
-      - build:
-          context:
-            - CICD
-            - AWS
-          requires:
-            - validate
-          filters:
-            branches:
-              only:
-                - master
-                - "feat/DO-1609_build_amis_on_different_accounts"
+#      - build:
+#          context:
+#            - CICD
+#            - AWS
+#          requires:
+#            - validate
+#          filters:
+#            branches:
+#              only:
+#                - master
+#                - "feat/DO-1609_build_amis_on_different_accounts"
 #      - mock-test:
 #          context: CICD
 #          requires:
