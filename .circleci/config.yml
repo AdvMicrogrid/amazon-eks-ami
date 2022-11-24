@@ -144,7 +144,7 @@ jobs:
       - run:
           name: verify variables
           command: |
-            echo "$BUILD_TAG" & echo "${AWS_ACCESS_KEY_ID: -3}"
+            echo "$AMI_USERS"
   build:
     # job to build aws ecr ami image
     docker:
@@ -168,7 +168,7 @@ jobs:
       - run:
           name: verify variables
           command: |
-            echo "AMI_USERS"
+            echo "$BUILD_TAG" & echo "${AWS_ACCESS_KEY_ID: -3}"
       - run:
           name: Packer build
           # AWS sometimes take really long to finish ami build.
