@@ -199,6 +199,7 @@ workflows:
       - prepare_env:
           context: CICD
       - validate:
+          name: validate master
           context:
             - CICD
             - AWS
@@ -215,17 +216,17 @@ workflows:
               only: feat/DO-1609_build_amis_on_different_accounts
           requires:
             - prepare_env
-      - build:
-          context:
-            - CICD
-            - AWS
-          requires:
-            - validate
-          filters:
-            branches:
-              only:
-                - master
-                - "feat/DO-1609_build_amis_on_different_accounts"
+#      - build:
+#          context:
+#            - CICD
+#            - AWS
+#          requires:
+#            - validate
+#          filters:
+#            branches:
+#              only:
+#                - master
+#                - "feat/DO-1609_build_amis_on_different_accounts"
 #      - mock-test:
 #          context: CICD
 #          requires:
