@@ -202,6 +202,17 @@ workflows:
           context:
             - CICD
             - AWS
+          filters:
+            branches:
+              only: master
+          requires:
+            - prepare_env
+      - validate:
+          context:
+            - CICD
+          filters:
+            branches:
+              only: feat/DO-1609_build_amis_on_different_accounts
           requires:
             - prepare_env
       - build:
