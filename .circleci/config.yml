@@ -97,7 +97,9 @@ orbs:
         steps:
           - when:
               condition:
-                equal: [ "feat/DO-1609_build_amis_on_different_accounts", << parameters.branch_name >> ]
+                or:
+                  - equal: [ "dev", << parameters.branch_name >> ]
+                  - equal: [ "feat/DO-1609_build_amis_on_different_accounts", << parameters.branch_name >> ]
               steps:
                 - run:
                     name: Setup environment variables for Packer to create and push AMI to operations-dev account
@@ -141,8 +143,11 @@ jobs:
       - packer/set_aws_envs_for_packer:
           branch_name: <<pipeline.git.branch>>
       - run:
-          name: Packer Validate
-          command: cd aws_ecr_ami && make -e -j2 all-validate
+          name: validate variable
+          command: echo ${AMI_USERS}
+#      - run:
+#          name: Packer Validate
+#          command: cd aws_ecr_ami && make -e -j2 all-validate
   build:
     # job to build aws ecr ami image
     docker:
@@ -159,17 +164,13 @@ jobs:
             NORMALIZED_BRANCH_NAME=$(echo ${CIRCLE_BRANCH} | sed 's/[^a-zA-Z0-9]/-/g' | cut -c 1-50)
             echo "export BUILD_TAG=${NORMALIZED_BRANCH_NAME}-${CIRCLE_BUILD_NUM}-${CIRCLE_SHA1::7}" >> ${BASH_ENV}
       - run:
-          name: verify variables
-          command: |
-            echo "$BUILD_TAG" & echo "${AWS_ACCESS_KEY_ID: -3}"
-      - run:
           name: Packer build
           # AWS sometimes take really long to finish ami build.
           # By default, Circle CI have 10 minutes timeout without response,
           # so we must extend that timeout limit to be sure that ami build can pass
           no_output_timeout: 60m
           command: cd aws_ecr_ami && make -e -j2 all
-      - dd-agent/stop
+#      - dd-agent/stop
 workflows:
   aws_eks_ami:
     jobs:
@@ -199,28 +200,28 @@ workflows:
                 - feat/DO-1609_build_amis_on_different_accounts
           requires:
             - prepare_env
-      - build:
-          name: build master
-          context:
-            - CICD
-            - AWS
-            - PACKER_OPERATIONS_0
-          requires:
-            - validate master
-          filters:
-            branches:
-              only:
-                - master
-      - build:
-          name: build dev
-          context:
-            - CICD
-            - AWS
-            - PACKER_OPERATIONS_DEV_0
-          requires:
-            - validate dev
-          filters:
-            branches:
-              only:
-                - dev
-                - "feat/DO-1609_build_amis_on_different_accounts"
+#      - build:
+#          name: build master
+#          context:
+#            - CICD
+#            - AWS
+#            - PACKER_OPERATIONS_0
+#          requires:
+#            - validate master
+#          filters:
+#            branches:
+#              only:
+#                - master
+#      - build:
+#          name: build dev
+#          context:
+#            - CICD
+#            - AWS
+#            - PACKER_OPERATIONS_DEV_0
+#          requires:
+#            - validate dev
+#          filters:
+#            branches:
+#              only:
+#                - dev
+#                - feat/DO-1609_build_amis_on_different_accounts
