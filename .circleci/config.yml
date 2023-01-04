@@ -124,7 +124,7 @@ jobs:
   prepare_env:
     # job to prepare build environment
     docker:
-      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
+      - image: 411466821576.dkr.ecr.us-west-2.amazonaws.com/devops/ci/packer:0.0.1
     working_directory: ~/aws_ecr_ami
     steps:
       - checkout:
@@ -136,25 +136,25 @@ jobs:
   validate:
     # job to validate aws ecr ami image
     docker:
-      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
+      - image: 411466821576.dkr.ecr.us-west-2.amazonaws.com/devops/ci/packer:0.0.1
     steps:
       - attach_workspace:
             at: .
-      - packer/set_aws_envs_for_packer:
-          branch_name: <<pipeline.git.branch>>
+#      - packer/set_aws_envs_for_packer:
+#          branch_name: <<pipeline.git.branch>>
       - run:
           name: Packer Validate
           command: cd aws_ecr_ami && make -e -j2 all-validate
   build:
     # job to build aws ecr ami image
     docker:
-      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
+      - image: 411466821576.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
     steps:
       - attach_workspace:
             at: .
 #      - dd-agent/setup
-      - packer/set_aws_envs_for_packer:
-          branch_name: <<pipeline.git.branch>>
+#      - packer/set_aws_envs_for_packer:
+#          branch_name: <<pipeline.git.branch>>
       - run:
           name: Prepare BUILD_TAG env
           command: |
@@ -176,8 +176,7 @@ workflows:
       - validate:
           name: validate master
           context:
-            - CICD
-            - AWS
+            - AWS_OPERATIONS_0
             - PACKER_OPERATIONS_0
           filters:
             branches:
@@ -187,8 +186,7 @@ workflows:
       - validate:
           name: validate dev
           context:
-            - CICD
-            - AWS
+            - AWS_OPERATIONS_DEV_0
             - PACKER_OPERATIONS_DEV_0
           filters:
             branches:
@@ -197,28 +195,24 @@ workflows:
                 - feat/DO-1609_build_amis_on_different_accounts
           requires:
             - prepare_env
-      - build:
-          name: build master
-          context:
-            - CICD
-            - AWS
-            - PACKER_OPERATIONS_0
-          requires:
-            - validate master
-          filters:
-            branches:
-              only:
-                - master
-      - build:
-          name: build dev
-          context:
-            - CICD
-            - AWS
-            - PACKER_OPERATIONS_DEV_0
-          requires:
-            - validate dev
-          filters:
-            branches:
-              only:
-                - dev
-                - feat/DO-1609_build_amis_on_different_accounts
+#      - build:
+#          name: build master
+#          context:
+#            - PACKER_OPERATIONS_0
+#          requires:
+#            - validate master
+#          filters:
+#            branches:
+#              only:
+#                - master
+#      - build:
+#          name: build dev
+#          context:
+#            - PACKER_OPERATIONS_DEV_0
+#          requires:
+#            - validate dev
+#          filters:
+#            branches:
+#              only:
+#                - dev
+#                - feat/DO-1609_build_amis_on_different_accounts
