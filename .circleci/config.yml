@@ -172,7 +172,7 @@ workflows:
   aws_eks_ami:
     jobs:
       - prepare_env:
-          context: CICD
+          context: AWS_OPERATIONS_DEV_0
       - validate:
           name: validate master
           context:
