@@ -180,21 +180,23 @@ workflows:
             - PACKER_OPERATIONS_0
           filters:
             branches:
-              only: master
-          requires:
-            - prepare_env
-      - validate:
-          name: validate dev
-          context:
-            - AWS_OPERATIONS_DEV_0
-            - PACKER_OPERATIONS_DEV_0
-          filters:
-            branches:
               only:
-                - dev
+                - master
                 - feat/DO-1609_build_amis_on_different_accounts
           requires:
             - prepare_env
+#      - validate:
+#          name: validate dev
+#          context:
+#            - AWS_OPERATIONS_DEV_0
+#            - PACKER_OPERATIONS_DEV_0
+#          filters:
+#            branches:
+#              only:
+#                - dev
+#                - feat/DO-1609_build_amis_on_different_accounts
+#          requires:
+#            - prepare_env
 #      - build:
 #          name: build master
 #          context:
@@ -205,6 +207,7 @@ workflows:
 #            branches:
 #              only:
 #                - master
+#                - feat/DO-1609_build_amis_on_different_accounts
 #      - build:
 #          name: build dev
 #          context:

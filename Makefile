@@ -87,7 +87,7 @@ k8s: validate
 
 .PHONY: 1.21
 1.21:
-	$(MAKE) ci-build kubernetes_version=1.21.5 kubernetes_build_date=2022-01-21 pull_cni_from_github=true
+	$(MAKE) ci-build kubernetes_version=1.21.14 kubernetes_build_date=2022-10-31 pull_cni_from_github=true
 
 .PHONY: 1.22
 1.22:
