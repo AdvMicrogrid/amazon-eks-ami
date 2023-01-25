@@ -148,7 +148,7 @@ jobs:
   build:
     # job to build aws ecr ami image
     docker:
-      - image: 411466821576.dkr.ecr.us-west-2.amazonaws.com/devops/ci/base:latest
+      - image: 411466821576.dkr.ecr.us-west-2.amazonaws.com/devops/ci/packer:0.0.1
     steps:
       - attach_workspace:
             at: .
