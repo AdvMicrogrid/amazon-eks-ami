@@ -197,17 +197,17 @@ workflows:
 #                - feat/DO-1609_build_amis_on_different_accounts
 #          requires:
 #            - prepare_env
-#      - build:
-#          name: build master
-#          context:
-#            - PACKER_OPERATIONS_0
-#          requires:
-#            - validate master
-#          filters:
-#            branches:
-#              only:
-#                - master
-#                - feat/DO-1609_build_amis_on_different_accounts
+      - build:
+          name: build master
+          context:
+            - PACKER_OPERATIONS_0
+          requires:
+            - validate master
+          filters:
+            branches:
+              only:
+                - master
+                - feat/DO-1609_build_amis_on_different_accounts
 #      - build:
 #          name: build dev
 #          context:

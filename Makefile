@@ -58,9 +58,9 @@ T_YELLOW := \e[0;33m
 T_RESET := \e[0m
 
 .PHONY: all 1.18 1.19 1.20 1.21 1.22
-all: 1.20-build
+all: 1.21
 
-all-validate: 1.20-validate
+all-validate: 1.21
 
 .PHONY: k8s
 k8s: validate
