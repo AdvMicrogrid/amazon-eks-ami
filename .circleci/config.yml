@@ -200,6 +200,7 @@ workflows:
       - build:
           name: build master
           context:
+            - AWS_OPERATIONS_0
             - PACKER_OPERATIONS_0
           requires:
             - validate master
