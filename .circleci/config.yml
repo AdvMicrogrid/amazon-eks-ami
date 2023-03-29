@@ -87,38 +87,6 @@ orbs:
                     StopAgent
                 fi
 
-  packer:
-    commands:
-      set_aws_envs_for_packer:
-        description: "Required to set AWS credentials for Packer to build AMI in a target account"
-        parameters:
-          branch_name:
-            type: string
-        steps:
-          - when:
-              condition:
-                or:
-                  - equal: [ "dev", << parameters.branch_name >> ]
-                  - equal: [ "feat/DO-1609_build_amis_on_different_accounts", << parameters.branch_name >> ]
-              steps:
-                - run:
-                    name: Setup environment variables for Packer to create and push AMI to operations-dev account
-                    command: |
-                      echo "Setup AWS environment variables for Packer running in operations-dev account"
-                      echo "export AWS_ACCESS_KEY_ID=${aws_circleci_operations_dev_id}" >> ${BASH_ENV}
-                      echo "export AWS_SECRET_ACCESS_KEY=${aws_circleci_operations_dev_key}" >> ${BASH_ENV}
-          - when:
-              condition:
-                equal: [ "master", << parameters.branch_name >> ]
-              steps:
-                - run:
-                    name: Setup environment variables for Packer to create and push AMI to operations account
-                    command: |
-                      echo "Setup AWS environment variables for Packer running in operations account"
-                      echo "export AWS_ACCESS_KEY_ID=${aws_circleci_operations_id}" >> ${BASH_ENV}
-                      echo "export AWS_SECRET_ACCESS_KEY=${aws_circleci_operations_key}" >> ${BASH_ENV}
-        
-
 # workflow jobs definition
 jobs:
   prepare_env:
@@ -134,27 +102,20 @@ jobs:
           paths:
             - aws_ecr_ami
   validate:
-    # job to validate aws ecr ami image
     docker:
       - image: 411466821576.dkr.ecr.us-west-2.amazonaws.com/devops/ci/packer:0.0.1
     steps:
       - attach_workspace:
             at: .
-#      - packer/set_aws_envs_for_packer:
-#          branch_name: <<pipeline.git.branch>>
       - run:
           name: Packer Validate
           command: cd aws_ecr_ami && make -e -j2 all-validate
   build:
-    # job to build aws ecr ami image
     docker:
       - image: 411466821576.dkr.ecr.us-west-2.amazonaws.com/devops/ci/packer:0.0.1
     steps:
       - attach_workspace:
             at: .
-#      - dd-agent/setup
-#      - packer/set_aws_envs_for_packer:
-#          branch_name: <<pipeline.git.branch>>
       - run:
           name: Prepare BUILD_TAG env
           command: |
@@ -174,31 +135,29 @@ workflows:
       - prepare_env:
           context: AWS_OPERATIONS_DEV_0
       - validate:
-          name: validate master
+          name: validate main
           context:
             - AWS_OPERATIONS_0
             - PACKER_OPERATIONS_0
           filters:
             branches:
               only:
-                - master
-                - feat/DO-1609_build_amis_on_different_accounts
+                - main
           requires:
             - prepare_env
-#      - validate:
-#          name: validate dev
-#          context:
-#            - AWS_OPERATIONS_DEV_0
-#            - PACKER_OPERATIONS_DEV_0
-#          filters:
-#            branches:
-#              only:
-#                - dev
-#                - feat/DO-1609_build_amis_on_different_accounts
-#          requires:
-#            - prepare_env
+      - validate:
+          name: validate dev
+          context:
+            - AWS_OPERATIONS_DEV_0
+            - PACKER_OPERATIONS_DEV_0
+          filters:
+            branches:
+              only:
+                - dev
+          requires:
+            - prepare_env
       - build:
-          name: build master
+          name: build main
           context:
             - AWS_OPERATIONS_0
             - PACKER_OPERATIONS_0
@@ -207,16 +166,15 @@ workflows:
           filters:
             branches:
               only:
-                - master
-                - feat/DO-1609_build_amis_on_different_accounts
-#      - build:
-#          name: build dev
-#          context:
-#            - PACKER_OPERATIONS_DEV_0
-#          requires:
-#            - validate dev
-#          filters:
-#            branches:
-#              only:
-#                - dev
-#                - feat/DO-1609_build_amis_on_different_accounts
+                - main
+      - build:
+          name: build dev
+          context:
+            - AWS_OPERATIONS_DEV_0
+            - PACKER_OPERATIONS_DEV_0
+          requires:
+            - validate dev
+          filters:
+            branches:
+              only:
+                - dev
