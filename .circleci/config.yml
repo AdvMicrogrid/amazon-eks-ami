@@ -1,92 +1,5 @@
 version: 2.1
 
-# Inline dd agent orb definition
-orbs:
-  dd-agent:
-    commands:
-      setup:
-        description: "Installs and starts the Datadog Agent"
-        parameters:
-          api_key:
-            type: env_var_name
-            description: The name of the environmental variable containing the API key
-            default: DD_API_KEY
-          agent_major_version:
-            type: string
-            description: The major version of the agent to use
-            default: "7"
-          site:
-            type: string
-            description: The datadog site to send data to. If the environment variable DD_SITE is set that will take preference.
-            default: "datadoghq.com"
-        steps:
-          - run:
-              environment:
-                PARAM_DD_API_KEY: <<parameters.api_key>>
-                PARAM_DD_AGENT_MAJOR_VERSION: <<parameters.agent_major_version>>
-                PARAM_DD_SITE: <<parameters.site>>
-              name: Install and start the Datadog Agent
-              working_directory: /tmp
-              command: |
-                Install() {
-                    PARAM_DD_API_KEY=$(eval echo "\$$PARAM_DD_API_KEY")
-
-                    if [[ -n "${DD_SITE}" ]]; then
-                        PARAM_DD_SITE=${DD_SITE}
-                    fi
-
-                    DD_API_KEY=${PARAM_DD_API_KEY} DD_AGENT_MAJOR_VERSION=${PARAM_DD_AGENT_MAJOR_VERSION} DD_SITE=${PARAM_DD_SITE} \
-                        DD_HOSTNAME="none" DD_INSTALL_ONLY="true" DD_APM_ENABLED="true" \
-                        bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script.sh)"
-
-                    if [ "$UID" = "0" ]; then export SUDO=''; else export SUDO='sudo'; fi
-                    $SUDO find /etc/datadog-agent/conf.d/ -iname "*.yaml.default" -delete
-                    $SUDO service datadog-agent start
-
-                    set +e
-                    attempts=0
-
-                    until [[ $attempts -eq 10 ]] || $SUDO datadog-agent health; do
-                        attempts=$((attempts+1))
-                        sleep_time=$(( attempts*5 < 30 ? attempts*5 : 30 ))
-                        echo "Waiting for agent to start up sleeping for ${sleep_time} seconds"
-                        sleep $sleep_time
-                    done
-
-                    if [[ $attempts -eq 10 ]]; then
-                        echo "Could not start the agent"
-                        exit 1
-                    else
-                        echo "Agent is ready"
-                    fi
-                }
-
-                # Will not run if sourced for bats-core tests.
-                # View src/tests for more information.
-                ORB_TEST_ENV="bats-core"
-                if [ "${0#*$ORB_TEST_ENV}" == "$0" ]; then
-                    Install
-                fi
-      stop:
-        description: "Gracefully stop the Datadog Agent"
-        steps:
-          - run:
-              when: always
-              name: Gracefully stop the Datadog Agent
-              command: |
-                StopAgent() {
-                    if [ "$UID" = "0" ]; then export SUDO=''; else export SUDO='sudo'; fi
-                    $SUDO service datadog-agent stop
-                }
-                
-                
-                # Will not run if sourced for bats-core tests.
-                # View src/tests for more information.
-                ORB_TEST_ENV="bats-core"
-                if [ "${0#*$ORB_TEST_ENV}" == "$0" ]; then
-                    StopAgent
-                fi
-
 # workflow jobs definition
 jobs:
   prepare_env:
@@ -128,7 +41,6 @@ jobs:
           # so we must extend that timeout limit to be sure that ami build can pass
           no_output_timeout: 60m
           command: cd aws_ecr_ami && make -e -j2 all
-#      - dd-agent/stop
 workflows:
   aws_eks_ami:
     jobs:
@@ -162,7 +74,7 @@ workflows:
             - AWS_OPERATIONS_0
             - PACKER_OPERATIONS_0
           requires:
-            - validate master
+            - validate main
           filters:
             branches:
               only:
