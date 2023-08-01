@@ -84,6 +84,8 @@ workflows:
           context:
             - AWS_OPERATIONS_DEV_0
             - PACKER_OPERATIONS_DEV_0
+          requires:
+            - prepare_env
           filters:
             branches:
               only:
