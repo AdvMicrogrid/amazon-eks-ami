@@ -31,7 +31,7 @@
     "source_ami_owners": "137112412989",
     "ssh_interface": "",
     "ssh_username": "ec2-user",
-    "subnet_id": "",
+    "subnet_id": "{{env `SUBNET_ID`}}",
     "temporary_security_group_source_cidrs": "",
     "volume_type": "gp2",
     "working_dir": "{{user `remote_folder`}}/worker"
