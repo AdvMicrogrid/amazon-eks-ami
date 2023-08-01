@@ -40,7 +40,7 @@ jobs:
           # By default, Circle CI have 10 minutes timeout without response,
           # so we must extend that timeout limit to be sure that ami build can pass
           no_output_timeout: 60m
-          command: cd aws_ecr_ami && make -e -j2 all
+          command: cd aws_ecr_ami && make -e -j2 1.23
 workflows:
   aws_eks_ami:
     jobs:
@@ -66,7 +66,6 @@ workflows:
             branches:
               only:
                 - dev
-                - test_packer_1_9_1
           requires:
             - prepare_env
       - build:
@@ -85,8 +84,6 @@ workflows:
           context:
             - AWS_OPERATIONS_DEV_0
             - PACKER_OPERATIONS_DEV_0
-          requires:
-            - validate dev
           filters:
             branches:
               only:
