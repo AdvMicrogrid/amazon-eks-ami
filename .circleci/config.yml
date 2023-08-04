@@ -48,7 +48,6 @@ workflows:
             branches:
               only:
                 - main
-                - test_packer_1_9_1
       - build:
           name: build dev
           context:
@@ -60,4 +59,3 @@ workflows:
             branches:
               only:
                 - dev
-#                - test_packer_1_9_1
