@@ -45,7 +45,7 @@ workflows:
       - prepare_env:
           context:
             - AWS_OPERATIONS_DEV_0
-            - PACKER_OPERATIONS_0
+            - PACKER_OPERATIONS_DEV_0
       - build:
           name: build main
           context:
