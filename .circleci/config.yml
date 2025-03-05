@@ -89,6 +89,43 @@ orbs:
 
 # workflow jobs definition
 jobs:
+  threatrix_scan:
+    docker:
+      - image: circleci/openjdk:11-jdk-node
+    working_directory: ~/repo
+    environment:
+      MAVEN_OPTS: -Xmx3200m
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - checkout
+      - run:
+          command: |
+            find . -name "requirements.txt" | xargs cat > requirements-all.txt
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements-all.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run:
+          name: Set up Maven .m2 directory and settings.xml for repository access
+          command: |
+            mkdir -p ~/.m2
+            wget -O ~/.m2/settings.xml https://fluence-threatrix.s3.amazonaws.com/artifactory_templates/settings.xml.artifactory_template
+      - run:
+          name: Evaluate Maven Dependencies if necessary
+          command: |
+            [[ ! -f pom.xml ]] && echo "no pom.xml present" || mvn -f pom.xml dependency:go-offline -Dmaven.test.skip=true -DARTIFACTORY_USERNAME=${ARTIFACTORY_USERNAME} -DARTIFACTORY_PASSWORD=${ARTIFACTORY_PASSWORD}
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "requirements-all.txt" }}
+      - run:
+          name: Install Threatrix ThreatAgent & Scan
+          command: |
+            curl -L ${THREATRIX_AGENT_URL} > /tmp/threatagent.jar
+            java -jar /tmp/threatagent.jar --progress ./
+
   prepare_env:
     # job to prepare build environment
     docker:
@@ -153,6 +190,11 @@ jobs:
 workflows:
   aws_eks_ami:
     jobs:
+      - threatrix_scan:
+          context:
+            - threatrix
+            - CICD
+            - ARTIFACTORY_SERVICE_ACCOUNT
       - prepare_env:
           context: CICD
       - validate:
