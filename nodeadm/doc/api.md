@@ -45,12 +45,13 @@ DisabledMount specifies a directory that should not be mounted onto local storag
 
 * `Containerd` refers to `/var/lib/containerd`
 * `PodLogs` refers to `/var/log/pods`
+* `SOCI` refers to `/var/lib/soci-snapshotter-grpc`
 
 _Appears in:_
 - [LocalStorageOptions](#localstorageoptions)
 
 .Validation:
-- Enum: [Containerd PodLogs]
+- Enum: [Containerd PodLogs SOCI]
 
 #### EnvironmentOptions
 
@@ -86,6 +87,7 @@ _Appears in:_
 | --- | --- |
 | `localStorage` _[LocalStorageOptions](#localstorageoptions)_ |  |
 | `environment` _[EnvironmentOptions](#environmentoptions)_ |  |
+| `network` _[NetworkOptions](#networkoptions)_ |  |
 
 #### KubeletOptions
 
@@ -125,6 +127,18 @@ _Appears in:_
 
 .Validation:
 - Enum: [RAID0 RAID10 Mount]
+
+#### NetworkOptions
+
+NetworkOptions are parameters used to configure networking on the host OS.
+
+_Appears in:_
+- [InstanceOptions](#instanceoptions)
+
+| Field | Description |
+| --- | --- |
+| `nameservers` _string array_ | Nameservers are servers for the instance's network name resolution. The<br />list may include both IPv4 and IPv6 addresses.<br />see: https://www.freedesktop.org/software/systemd/man/latest/resolved.conf.html#DNS= |
+| `domains` _string array_ | Domains are search entries for the instance's network name resolution.<br />see: https://www.freedesktop.org/software/systemd/man/latest/resolved.conf.html#Domains= |
 
 #### NodeConfig
 
