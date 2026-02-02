@@ -141,7 +141,7 @@ k8s: validate ## Build default K8s version of EKS Optimized AMI
 1.29: ## Build EKS Optimized AMI - K8s 1.29 - DEPRECATED: use the `k8s` variable instead
 	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.29)
 
-.PHONY: 1.30
+.PHONY: 1.30 
 1.30: ## Build EKS Optimized AMI - K8s 1.30 - DEPRECATED: use the `k8s` variable instead
 	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.30)
 
