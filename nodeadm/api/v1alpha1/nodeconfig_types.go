@@ -92,6 +92,19 @@ type ContainerdOptions struct {
 type InstanceOptions struct {
 	LocalStorage LocalStorageOptions `json:"localStorage,omitempty"`
 	Environment  EnvironmentOptions  `json:"environment,omitempty"`
+	Network      NetworkOptions      `json:"network,omitempty"`
+}
+
+// NetworkOptions are parameters used to configure networking on the host OS.
+type NetworkOptions struct {
+	// Nameservers are servers for the instance's network name resolution. The
+	// list may include both IPv4 and IPv6 addresses.
+	// see: https://www.freedesktop.org/software/systemd/man/latest/resolved.conf.html#DNS=
+	Nameservers []string `json:"nameservers,omitempty"`
+
+	// Domains are search entries for the instance's network name resolution.
+	// see: https://www.freedesktop.org/software/systemd/man/latest/resolved.conf.html#Domains=
+	Domains []string `json:"domains,omitempty"`
 }
 
 // EnvironmentOptions configures environment variables for the system and systemd services.
@@ -132,12 +145,14 @@ const (
 //
 // * `Containerd` refers to `/var/lib/containerd`
 // * `PodLogs` refers to `/var/log/pods`
-// +kubebuilder:validation:Enum={Containerd, PodLogs}
+// * `SOCI` refers to `/var/lib/soci-snapshotter-grpc`
+// +kubebuilder:validation:Enum={Containerd, PodLogs, SOCI}
 type DisabledMount string
 
 const (
 	DisabledMountContainerd DisabledMount = "Containerd"
 	DisabledMountPodLogs    DisabledMount = "PodLogs"
+	DisabledMountSOCI       DisabledMount = "SOCI"
 )
 
 // Feature specifies which feature gate should be toggled

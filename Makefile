@@ -30,9 +30,12 @@ ifeq ($(enable_fips), true)
 	AMI_VARIANT := $(AMI_VARIANT)-fips
 endif
 
-ifeq ($(os_distro), al2023)
-	ifdef enable_accelerator
-		AMI_VARIANT := $(AMI_VARIANT)-$(enable_accelerator)
+ifdef enable_accelerator
+	AMI_VARIANT := $(AMI_VARIANT)-$(enable_accelerator)
+
+	ifeq ($(os_distro), al2)
+		enable_efa ?= true
+		launch_block_device_mappings_volume_size ?= 10
 	endif
 endif
 
@@ -43,7 +46,7 @@ else ifeq ($(aws_region), us-gov-west-1)
 endif
 
 # default to the latest supported Kubernetes version
-k8s=1.29
+k8s=1.30
 
 .PHONY: build
 build: ## Build EKS Optimized AMI, default using AL2, use os_distro=al2023 for AL2023 AMI
@@ -137,6 +140,10 @@ k8s: validate ## Build default K8s version of EKS Optimized AMI
 .PHONY: 1.29
 1.29: ## Build EKS Optimized AMI - K8s 1.29 - DEPRECATED: use the `k8s` variable instead
 	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.29)
+
+.PHONY: 1.30 
+1.30: ## Build EKS Optimized AMI - K8s 1.30 - DEPRECATED: use the `k8s` variable instead
+	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.30)
 
 .PHONY: lint-docs
 lint-docs: ## Lint the docs
