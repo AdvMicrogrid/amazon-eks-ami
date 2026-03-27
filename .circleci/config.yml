@@ -21,7 +21,7 @@ jobs:
   build:
     executor: packer
     environment:
-      K8S_VERSION: 1.29
+      K8S_VERSION: 1.31
       os_distro: "al2"
     steps:
       - attach_workspace:
@@ -72,5 +72,5 @@ workflows:
           filters:
             branches:
               only:
-                - dev
-                # - DO-5213-merge_with_upstream_v20251103
+                # - dev
+                - DO-5567_merge_with_upstream_v20260304

@@ -14,6 +14,7 @@ K8S_VERSION_MINOR := $(word 1,${K8S_VERSION_PARTS}).$(word 2,${K8S_VERSION_PARTS
 
 AMI_VARIANT ?= amazon-eks
 AMI_VERSION ?= v$(shell date '+%Y%m%d')
+aws_region ?= us-west-2
 os_distro ?= al2
 arch ?= x86_64
 
@@ -30,24 +31,29 @@ ifeq ($(enable_fips), true)
 	AMI_VARIANT := $(AMI_VARIANT)-fips
 endif
 
-ifeq ($(os_distro), al2023)
-	ifdef enable_accelerator
-		AMI_VARIANT := $(AMI_VARIANT)-$(enable_accelerator)
+ifdef enable_accelerator
+	AMI_VARIANT := $(AMI_VARIANT)-$(enable_accelerator)
+
+	ifeq ($(os_distro), al2)
+		enable_efa ?= true
+		launch_block_device_mappings_volume_size ?= 10
 	endif
 endif
 
+ami_name ?= $(AMI_VARIANT)-node-$(K8S_VERSION_MINOR)-$(AMI_VERSION)
+
 ifeq ($(aws_region), cn-northwest-1)
 	source_ami_owners ?= 141808717104
-else ifeq ($(aws_region), us-gov-west-1)
+else ifneq ($(filter $(aws_region),us-gov-west-1 us-gov-east-1),)
 	source_ami_owners ?= 045324592363
 endif
 
 # default to the latest supported Kubernetes version
-k8s=1.29
+k8s=1.31
 
 .PHONY: build
 build: ## Build EKS Optimized AMI, default using AL2, use os_distro=al2023 for AL2023 AMI
-	$(MAKE) k8s $(shell hack/latest-binaries.sh $(k8s))
+	$(MAKE) k8s $(shell hack/latest-binaries.sh $(k8s) $(aws_region))
 
 .PHONY: fmt
 fmt: ## Format the source files
@@ -112,31 +118,39 @@ k8s: validate ## Build default K8s version of EKS Optimized AMI
 
 .PHONY: 1.23
 1.23: ## Build EKS Optimized AMI - K8s 1.23 - DEPRECATED: use the `k8s` variable instead
-	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.23)
+	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.23 $(aws_region))
 
 .PHONY: 1.24
 1.24: ## Build EKS Optimized AMI - K8s 1.24 - DEPRECATED: use the `k8s` variable instead
-	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.24)
+	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.24 $(aws_region))
 
 .PHONY: 1.25
 1.25: ## Build EKS Optimized AMI - K8s 1.25 - DEPRECATED: use the `k8s` variable instead
-	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.25)
+	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.25 $(aws_region))
 
 .PHONY: 1.26
 1.26: ## Build EKS Optimized AMI - K8s 1.26 - DEPRECATED: use the `k8s` variable instead
-	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.26)
+	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.26 $(aws_region))
 
 .PHONY: 1.27
 1.27: ## Build EKS Optimized AMI - K8s 1.27 - DEPRECATED: use the `k8s` variable instead
-	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.27)
+	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.27 $(aws_region))
 
 .PHONY: 1.28
 1.28: ## Build EKS Optimized AMI - K8s 1.28 - DEPRECATED: use the `k8s` variable instead
-	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.28)
+	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.28 $(aws_region))
 
 .PHONY: 1.29
-1.29: ## Build EKS Optimized AMI - K8s 1.29 - DEPRECATED: use the `k8s` variable instead
-	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.29)
+1.29: ## Build EKS Optimized AMI - K8s 1.29 
+	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.29 $(aws_region))
+
+.PHONY: 1.30
+1.30: ## Build EKS Optimized AMI - K8s 1.30
+	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.30 $(aws_region))
+
+.PHONY: 1.31
+1.31: ## Build EKS Optimized AMI - K8s 1.31
+	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.31 $(aws_region))
 
 .PHONY: lint-docs
 lint-docs: ## Lint the docs

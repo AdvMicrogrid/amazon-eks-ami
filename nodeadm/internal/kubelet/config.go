@@ -19,8 +19,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8skubelet "k8s.io/kubelet/config/v1beta1"
 
+	"github.com/avast/retry-go/v5"
 	"github.com/aws/smithy-go/ptr"
-
 	"github.com/awslabs/amazon-eks-ami/nodeadm/internal/api"
 	"github.com/awslabs/amazon-eks-ami/nodeadm/internal/aws/imds"
 	"github.com/awslabs/amazon-eks-ami/nodeadm/internal/containerd"
@@ -34,16 +34,6 @@ const (
 	kubeletConfigDir  = "config.json.d"
 	kubeletConfigPerm = 0644
 )
-
-func (k *kubelet) writeKubeletConfig(cfg *api.NodeConfig) error {
-	// tracking: https://github.com/kubernetes/enhancements/issues/3983
-	// for enabling drop-in configuration
-	if semver.Compare(cfg.Status.KubeletVersion, "v1.29.0") < 0 {
-		return k.writeKubeletConfigToFile(cfg)
-	} else {
-		return k.writeKubeletConfigToDir(cfg)
-	}
-}
 
 // kubeletConfig is an internal-only representation of the kubelet configuration
 // that is generated using sane defaults for EKS. It is a subset of the upstream
@@ -178,7 +168,20 @@ func (ksc *kubeletConfig) withOutpostSetup(cfg *api.NodeConfig) error {
 		}
 
 		// TODO: cleanup
-		ipAddresses, err := net.LookupHost(apiUrl.Host)
+		var ipAddresses []string
+		err = retry.New(
+			retry.Attempts(6),
+			retry.Delay(200*time.Millisecond),
+			retry.OnRetry(func(n uint, err error) {
+				zap.L().Info("Retrying DNS lookup after error", zap.Error(err))
+			}),
+		).Do(
+			func() error {
+				var err error
+				ipAddresses, err = net.LookupHost(apiUrl.Host)
+				return err
+			},
+		)
 		if err != nil {
 			return err
 		}
@@ -200,8 +203,28 @@ func (ksc *kubeletConfig) withOutpostSetup(cfg *api.NodeConfig) error {
 	return nil
 }
 
-func (ksc *kubeletConfig) withNodeIp(cfg *api.NodeConfig, flags map[string]string) error {
-	nodeIp, err := getNodeIp(context.TODO(), cfg, imds.DefaultClient())
+func (ksc *kubeletConfig) withNodeLabels(flags map[string]string, nodeLabelFuncs map[string]LabelProvider) {
+	var nodeLabels []string
+	for nodeLabelKey, provider := range nodeLabelFuncs {
+		nodeLabelValue, ok, err := provider.Get()
+		if err != nil {
+			zap.L().Error("Failed to get node label value", zap.String("key", nodeLabelKey), zap.Error(err))
+			continue
+		}
+		if !ok {
+			continue
+		}
+		nodeLabel := fmt.Sprintf("%s=%s", nodeLabelKey, nodeLabelValue)
+		zap.L().Info("Adding node label", zap.String("label", nodeLabel))
+		nodeLabels = append(nodeLabels, nodeLabel)
+	}
+	if len(nodeLabels) > 0 {
+		flags["node-labels"] = strings.Join(nodeLabels, ",")
+	}
+}
+
+func (ksc *kubeletConfig) withNodeIp(cfg *api.NodeConfig, flags map[string]string, imdsClient imds.IMDSClient) error {
+	nodeIp, err := getNodeIp(context.TODO(), cfg, imdsClient)
 	if err != nil {
 		return err
 	}
@@ -247,8 +270,7 @@ func (ksc *kubeletConfig) withCloudProvider(cfg *api.NodeConfig, flags map[strin
 	flags["hostname-override"] = nodeName
 }
 
-// When the DefaultReservedResources flag is enabled, override the kubelet
-// config with reserved cgroup values on behalf of the user
+// Override the kubelet config with reserved cgroup values on behalf of the user
 func (ksc *kubeletConfig) withDefaultReservedResources(cfg *api.NodeConfig, resources system.Resources) {
 	ksc.SystemReservedCgroup = ptr.String("/system")
 	ksc.KubeReservedCgroup = ptr.String("/runtime")
@@ -265,29 +287,19 @@ func (ksc *kubeletConfig) withDefaultReservedResources(cfg *api.NodeConfig, reso
 	}
 }
 
-// withPodInfraContainerImage determines whether to add the
-// '--pod-infra-container-image' flag, which is used to ensure the sandbox image
-// is not garbage collected.
-//
-// TODO: revisit once the minimum supportted version catches up or the container
-// runtime is moved to containerd 2.0
-func (ksc *kubeletConfig) withPodInfraContainerImage(cfg *api.NodeConfig, flags map[string]string) error {
-	// the flag is a noop on 1.29+, since the behavior was changed to use the
-	// CRI image pinning behavior and no longer considers the flag value.
-	// see: https://github.com/kubernetes/kubernetes/pull/118544
-	if semver.Compare(cfg.Status.KubeletVersion, "v1.29.0") < 0 {
-		flags["pod-infra-container-image"] = cfg.Status.Defaults.SandboxImage
-	}
-	return nil
-}
-
 func (ksc *kubeletConfig) withImageServiceEndpoint(cfg *api.NodeConfig, resources system.Resources) {
 	if containerd.UseSOCISnapshotter(cfg, resources) {
 		ksc.ImageServiceEndpoint = "unix:///run/soci-snapshotter-grpc/soci-snapshotter-grpc.sock"
 	}
 }
 
-func (k *kubelet) GenerateKubeletConfig(cfg *api.NodeConfig) (*kubeletConfig, error) {
+func (ksc *kubeletConfig) withRuntimeCgroups(flags map[string]string) {
+	// Set runtime cgroups so that cadvisor metrics include container usage.
+	// Reference https://github.com/awslabs/amazon-eks-ami/issues/1667
+	flags["runtime-cgroups"] = "/runtime.slice/containerd.service"
+}
+
+func (k *kubelet) generateKubeletConfig(cfg *api.NodeConfig) (*kubeletConfig, error) {
 	kubeletConfig := defaultKubeletSubConfig()
 
 	if err := kubeletConfig.withFallbackClusterDns(&cfg.Spec.Cluster); err != nil {
@@ -296,10 +308,7 @@ func (k *kubelet) GenerateKubeletConfig(cfg *api.NodeConfig) (*kubeletConfig, er
 	if err := kubeletConfig.withOutpostSetup(cfg); err != nil {
 		return nil, err
 	}
-	if err := kubeletConfig.withNodeIp(cfg, k.flags); err != nil {
-		return nil, err
-	}
-	if err := kubeletConfig.withPodInfraContainerImage(cfg, k.flags); err != nil {
+	if err := kubeletConfig.withNodeIp(cfg, k.flags, k.imdsClient); err != nil {
 		return nil, err
 	}
 
@@ -307,47 +316,23 @@ func (k *kubelet) GenerateKubeletConfig(cfg *api.NodeConfig) (*kubeletConfig, er
 	kubeletConfig.withCloudProvider(cfg, k.flags)
 	kubeletConfig.withDefaultReservedResources(cfg, k.resources)
 	kubeletConfig.withImageServiceEndpoint(cfg, k.resources)
+	kubeletConfig.withRuntimeCgroups(k.flags)
+
+	nodeLabelFuncs := map[string]LabelProvider{}
+	if semver.Compare(cfg.Status.KubeletVersion, "v1.35.0") >= 0 {
+		// see: https://github.com/NVIDIA/gpu-operator/commit/e25291b86cf4542ac62d8635cda4bd653c4face3
+		nodeLabelFuncs["nvidia.com/gpu.present"] = NvidiaGPULabel{fs: system.RealFileSystem{}}
+	}
+	kubeletConfig.withNodeLabels(k.flags, nodeLabelFuncs)
 
 	return &kubeletConfig, nil
 }
 
-// WriteConfig writes the kubelet config to a file.
-// This should only be used for kubelet versions < 1.28.
-func (k *kubelet) writeKubeletConfigToFile(cfg *api.NodeConfig) error {
-	kubeletConfig, err := k.GenerateKubeletConfig(cfg)
-	if err != nil {
-		return err
-	}
-
-	var kubeletConfigBytes []byte
-	if len(cfg.Spec.Kubelet.Config) > 0 {
-		mergedMap, err := util.Merge(kubeletConfig, cfg.Spec.Kubelet.Config, json.Marshal, json.Unmarshal)
-		if err != nil {
-			return err
-		}
-		if kubeletConfigBytes, err = json.MarshalIndent(mergedMap, "", strings.Repeat(" ", 4)); err != nil {
-			return err
-		}
-	} else {
-		var err error
-		if kubeletConfigBytes, err = json.MarshalIndent(kubeletConfig, "", strings.Repeat(" ", 4)); err != nil {
-			return err
-		}
-	}
-
-	configPath := path.Join(kubeletConfigRoot, kubeletConfigFile)
-	k.flags["config"] = configPath
-
-	zap.L().Info("Writing kubelet config to file..", zap.String("path", configPath))
-	return util.WriteFileWithDir(configPath, kubeletConfigBytes, kubeletConfigPerm)
-}
-
-// WriteKubeletConfigToDir writes nodeadm's generated kubelet config to the
+// writeKubeletConfig writes nodeadm's generated kubelet config to the
 // standard config file and writes the user's provided config to a directory for
-// drop-in support. This is only supported on kubelet versions >= 1.28. see:
-// https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/#kubelet-conf-d
-func (k *kubelet) writeKubeletConfigToDir(cfg *api.NodeConfig) error {
-	kubeletConfig, err := k.GenerateKubeletConfig(cfg)
+// drop-in support.
+func (k *kubelet) writeKubeletConfig(cfg *api.NodeConfig) error {
+	kubeletConfig, err := k.generateKubeletConfig(cfg)
 	if err != nil {
 		return err
 	}
@@ -367,10 +352,10 @@ func (k *kubelet) writeKubeletConfigToDir(cfg *api.NodeConfig) error {
 	if len(cfg.Spec.Kubelet.Config) > 0 {
 		dirPath := path.Join(kubeletConfigRoot, kubeletConfigDir)
 		k.flags["config-dir"] = dirPath
-
-		zap.L().Info("Enabling kubelet config drop-in dir..")
-		k.environment["KUBELET_CONFIG_DROPIN_DIR_ALPHA"] = "on"
-		filePath := path.Join(dirPath, "40-nodeadm.conf")
+		if semver.Compare(cfg.Status.KubeletVersion, "v1.30.0") < 0 {
+			zap.L().Info("Enabling kubelet config drop-in dir..")
+			k.environment["KUBELET_CONFIG_DROPIN_DIR_ALPHA"] = "on"
+		}
 
 		// merge in default type metadata like kind and apiVersion in case the
 		// user has not specified this, as it is required to qualify a drop-in
@@ -383,6 +368,7 @@ func (k *kubelet) writeKubeletConfigToDir(cfg *api.NodeConfig) error {
 		if err != nil {
 			return err
 		}
+		filePath := path.Join(dirPath, "40-nodeadm.conf")
 		zap.L().Info("Writing user kubelet config to drop-in file..", zap.String("path", filePath))
 		if err := util.WriteFileWithDir(filePath, userKubeletConfigBytes, kubeletConfigPerm); err != nil {
 			return err
@@ -433,6 +419,7 @@ func getCPUMillicoresToReserve(resources system.Resources) int {
 
 	for i, percentageToReserveForRange := range cpuPercentageReservedForRanges {
 		startRange := cpuRanges[i]
+		// #nosec G602 // cpuRanges is one item longer than cpuPercentageReservedForRanges
 		endRange := cpuRanges[i+1]
 		cpuToReserve += getResourceToReserveInRange(totalCPUMillicores, startRange, endRange, percentageToReserveForRange)
 	}
