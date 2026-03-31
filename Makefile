@@ -36,7 +36,7 @@ ifdef enable_accelerator
 
 	ifeq ($(os_distro), al2)
 		enable_efa ?= true
-		launch_block_device_mappings_volume_size ?= 10
+		launch_block_device_mappings_volume_size ?= 100
 	endif
 endif
 

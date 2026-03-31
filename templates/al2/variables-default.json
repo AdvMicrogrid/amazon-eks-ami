@@ -26,7 +26,7 @@
     "kernel_version": "",
     "kms_key_id": "",
     "iam_instance_profile": "",
-    "launch_block_device_mappings_volume_size": "4",
+    "launch_block_device_mappings_volume_size": "100",
     "pause_container_version": "3.10",
     "pull_cni_from_github": "true",
     "remote_folder": "/tmp",
@@ -41,7 +41,7 @@
     "subnet_id": "",
     "temporary_security_group_source_cidrs": "",
     "user_data_file": null,
-    "volume_type": "gp2",
+    "volume_type": "gp3",
     "working_dir": "{{user `remote_folder`}}/worker",
     "custom_endpoint_ec2": ""
 }
