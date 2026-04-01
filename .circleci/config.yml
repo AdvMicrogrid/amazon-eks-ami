@@ -72,5 +72,5 @@ workflows:
           filters:
             branches:
               only:
-                # - dev
-                - DO-5567_merge_with_upstream_v20260304
+                - dev
+                # - DO-5567_merge_with_upstream_v20260304
