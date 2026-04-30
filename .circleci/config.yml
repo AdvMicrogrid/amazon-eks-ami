@@ -37,11 +37,7 @@ jobs:
             echo "export AMI_NAME=${AMI_NAME}" >> ${BASH_ENV}
       - run:
           name: Install aws cli
-          command: |
-            if ! aws --version 2>/dev/null; then
-              apk add --no-cache python3 py3-pip groff
-              pip3 install awscli --break-system-packages
-            fi
+          command: apk add aws-cli
       - run:
           name: Install dependency for packer
           command: cd aws_ecr_ami && packer plugins install github.com/hashicorp/amazon
@@ -51,7 +47,8 @@ jobs:
           # By default, Circle CI have 10 minutes timeout without response,
           # so we must extend that timeout limit to be sure that ami build can pass
           no_output_timeout: 60m
-          command: cd aws_ecr_ami && PACKER_VARIABLE_FILE=fluence-eks-worker-al2023-variables.json make -e build os_distro=al2023 k8s=${K8S_VERSION}
+          # command: cd aws_ecr_ami && PACKER_VARIABLE_FILE=fluence-eks-worker-al2023-variables.json make -e build os_distro=al2023 k8s=${K8S_VERSION}
+          command: cd aws_ecr_ami && PACKER_VARIABLE_FILE=fluence-eks-worker-al2023-variables.json make -e -j2 ${K8S_VERSION}
           # command: cd aws_ecr_ami && PACKER_VARIABLE_FILE=fluence-eks-worker-al2-variables.json make -e -j2 ${K8S_VERSION}
 workflows:
   aws_eks_ami:
