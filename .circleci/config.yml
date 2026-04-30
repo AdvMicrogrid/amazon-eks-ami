@@ -5,10 +5,8 @@ executors:
     docker:
       - image: 411466821576.dkr.ecr.us-west-2.amazonaws.com/devops/ci/packer:1.11.0.release-release
 
-# workflow jobs definition
 jobs:
   prepare_env:
-    # job to prepare build environment
     executor: packer
     working_directory: ~/aws_ecr_ami
     steps:
@@ -46,11 +44,7 @@ jobs:
           command: cd aws_ecr_ami && packer plugins install github.com/hashicorp/amazon
       - run:
           name: Packer validate and build AMI
-          # AWS sometimes take really long to finish ami build.
-          # By default, Circle CI have 10 minutes timeout without response,
-          # so we must extend that timeout limit to be sure that ami build can pass
           no_output_timeout: 60m
-          # command: cd aws_ecr_ami && PACKER_VARIABLE_FILE=fluence-eks-worker-al2023-variables.json make -e build os_distro=al2023 k8s=${K8S_VERSION}
           command: cd aws_ecr_ami && PACKER_VARIABLE_FILE=fluence-eks-worker-al2023-variables.json make -e build os_distro=al2023 k8s=${K8S_VERSION}
           # command: cd aws_ecr_ami && PACKER_VARIABLE_FILE=fluence-eks-worker-al2-variables.json make -e -j2 ${K8S_VERSION}
 workflows:
