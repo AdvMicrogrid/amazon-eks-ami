@@ -52,6 +52,10 @@ k8s=1.30
 build: ## Build EKS Optimized AMI, default using AL2, use os_distro=al2023 for AL2023 AMI
 	$(MAKE) k8s $(shell hack/latest-binaries.sh $(k8s))
 
+.PHONY: build-al2023
+build-al2023: ## Build EKS Optimized AMI using AL2023
+	$(MAKE) build os_distro=al2023 PACKER_VARIABLE_FILE=fluence-eks-worker-al2023-variables.json
+
 .PHONY: fmt
 fmt: ## Format the source files
 	$(SHFMT_COMMAND) $(SHFMT_FLAGS) --write $(MAKEFILE_DIR)
