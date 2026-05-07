@@ -19,7 +19,7 @@ jobs:
   build:
     executor: packer
     environment:
-      K8S_VERSION: "1.30" # specify the Kubernetes version here
+      K8S_VERSION: "1.31" # specify the Kubernetes version here
       # os_distro: "al2"
       os_distro: "al2023"
     steps:

@@ -39,10 +39,10 @@ following command in the root of this repository:
 make
 
 # build an AMI with a specific Kubernetes version and the default OS distro
-make k8s=1.30
+make k8s=1.31
 
 # build an AMI with a specific Kubernetes version and a specific OS distro
-make k8s=1.30 os_distro=al2023
+make k8s=1.31 os_distro=al2023
 
 # check default value and options in help doc
 make help
