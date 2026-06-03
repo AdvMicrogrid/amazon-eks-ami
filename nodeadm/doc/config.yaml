@@ -3,4 +3,4 @@ processor:
   ignoreTypes:
     - "List$"
 render:
-  kubernetesVersion: 1.31
+  kubernetesVersion: 1.34
