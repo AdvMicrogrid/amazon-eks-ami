@@ -58,7 +58,9 @@ else ifneq ($(filter $(aws_region),us-gov-west-1 us-gov-east-1),)
 endif
 
 # default to the latest supported Kubernetes version
-k8s=1.32
+# k8s=1.32
+
+k8s ?= 1.32
 
 .PHONY: build
 build: ## Build EKS Optimized AMI (requires os_distro=al2023)
@@ -118,6 +120,13 @@ k8s: validate ## Build default K8s version of EKS Optimized AMI
 	@echo "Building AMI [os_distro=$(os_distro) kubernetes_version=$(kubernetes_version) arch=$(arch) $(if $(enable_accelerator),enable_accelerator=$(enable_accelerator))]"
 	$(PACKER_BINARY) build -timestamp-ui -color=false $(PACKER_ARGS) $(PACKER_TEMPLATE_FILE)
 
+.PHONY: 1.%
+1.%: ## Build EKS Optimized AMI - K8s 1.x (e.g. `make 1.32 os_distro=al2023`)
+ifndef os_distro
+	$(error os_distro is required (e.g., os_distro=al2023))
+endif
+	$(MAKE) k8s os_distro=$(os_distro) k8s=$@ $(shell hack/latest-binaries.sh $@ $(aws_region))
+
 # DEPRECATION NOTICE: `make` targets for each Kubernetes minor version will not be added after 1.28
 # Use the `k8s` variable to specify a minor version instead
 
@@ -156,7 +165,6 @@ k8s: validate ## Build default K8s version of EKS Optimized AMI
 .PHONY: 1.31
 1.31: ## Build EKS Optimized AMI - K8s 1.31
 	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.31 $(aws_region))
-
 
 .PHONY: lint-docs
 lint-docs: ## Lint the docs
