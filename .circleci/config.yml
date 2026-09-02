@@ -127,15 +127,40 @@ jobs:
       #       apk add --no-cache aws-cli
       #       apk upgrade --no-cache expat
       - run:
-          name: Check Alpine packages
+          name: Fix Alpine packages and install AWS CLI
           command: |
+            set -eux
+
+            apk update
+
+            apk add --no-cache --upgrade \
+              expat \
+              python3 \
+              aws-cli
+
+            aws --version
+
+      - run:
+          name: Check Alpine package versions
+          command: |
+            set -x
+
             cat /etc/alpine-release
-            python3 --version || true
-            apk policy expat
-            apk policy python3
-            apk policy aws-cli
-            apk info -vv | grep -E 'expat|python3|aws-cli'
-                
+
+            echo "=== Repositories ==="
+            cat /etc/apk/repositories
+
+            echo "=== Package versions ==="
+            apk policy expat || true
+            apk policy python3 || true
+            apk policy aws-cli || true
+
+            echo "=== Installed packages ==="
+            apk info -vv | grep -E 'expat|python3|aws-cli' || true
+
+            echo "=== Expat library ==="
+            ls -l /usr/lib/libexpat* || true
+
       - run:
           name: Install dependency for packer
           command: cd aws_ecr_ami && packer plugins install github.com/hashicorp/amazon
