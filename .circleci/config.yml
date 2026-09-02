@@ -127,10 +127,9 @@ jobs:
       #       apk add --no-cache aws-cli
       #       apk upgrade --no-cache expat
       - run:
-          name: Install AWS CLI
-          command: |
-            apk add --no-cache aws-cli
-            aws --version
+          name: Install aws cli
+          command: apk add aws-cli
+          
       - run:
           name: Install dependency for packer
           command: cd aws_ecr_ami && packer plugins install github.com/hashicorp/amazon
