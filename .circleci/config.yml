@@ -127,9 +127,15 @@ jobs:
       #       apk add --no-cache aws-cli
       #       apk upgrade --no-cache expat
       - run:
-          name: Install aws cli
-          command: apk add aws-cli
-          
+          name: Check Alpine packages
+          command: |
+            cat /etc/alpine-release
+            python3 --version || true
+            apk policy expat
+            apk policy python3
+            apk policy aws-cli
+            apk info -vv | grep -E 'expat|python3|aws-cli'
+                
       - run:
           name: Install dependency for packer
           command: cd aws_ecr_ami && packer plugins install github.com/hashicorp/amazon
