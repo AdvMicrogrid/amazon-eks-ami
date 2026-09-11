@@ -21,7 +21,7 @@
     "kernel_version": "",
     "kms_key_id": "{{env `KMS_KEY_ID`}}",
     "launch_block_device_mappings_volume_size": "100",
-    "pause_container_version": "3.5",
+    "pause_container_version": "3.10",
     "pull_cni_from_github": "true",
     "remote_folder": "/tmp",
     "runc_version": "1.1.14-1.amzn2",
