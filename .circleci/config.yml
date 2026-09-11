@@ -34,13 +34,15 @@ jobs:
             AMI_NAME="amazon-eks-node-${K8S_VERSION}-$(date '+%Y-%m-%d')"
             echo "export AMI_NAME=${AMI_NAME}" >> ${BASH_ENV}
       - run:
-          name: Install aws cli
+          name: Fix Alpine packages and install AWS CLI
           command: |
+            set -eux
             apk update
-            apk add --no-cache aws-cli
-            apk upgrade --no-cache expat
-          # name: Install aws cli
-          # command: apk add aws-cli
+            apk add --no-cache --upgrade \
+              expat \
+              python3 \
+              aws-cli
+            aws --version
  
       - run:
           name: Install dependency for packer
