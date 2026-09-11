@@ -50,7 +50,7 @@ endif
 
 # default to the latest supported Kubernetes version
 k8s=1.32
-kubernetes_build_date=2026-09-10
+#kubernetes_build_date=2026-09-10
 
 .PHONY: build
 build: ## Build EKS Optimized AMI, default using AL2, use os_distro=al2023 for AL2023 AMI
