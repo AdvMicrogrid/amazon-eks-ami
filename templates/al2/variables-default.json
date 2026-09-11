@@ -32,7 +32,7 @@
     "remote_folder": "/tmp",
     "runc_version": "1.*",
     "security_group_id": "",
-    "source_ami_filter_name": "amzn2-ami-minimal-hvm-*-gp2",
+    "source_ami_filter_name": "amzn2-ami-minimal-hvm-*-gp3",
     "source_ami_id": "",
     "source_ami_owners": "137112412989",
     "ssh_interface": "",
