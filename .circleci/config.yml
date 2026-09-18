@@ -79,6 +79,6 @@ workflows:
           filters:
             branches:
               only:
-                - dev
-                #- DO-6065-al2023-ami-eks-1.32-upstream_v20260818
+                - DO-6065-al2023-ami-eks-1.32-upstream_v20260818
+                #- dev
                 
