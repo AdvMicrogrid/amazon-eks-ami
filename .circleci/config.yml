@@ -170,7 +170,7 @@ workflows:
           filters:
             branches:
               only:
-                - DO-6065-al2023-ami-eks-operation-1.32-upstream_v20260818 #main
+                - main
       # - build:
       #     name: build main al2023
       #     os_distro: "al2023"
@@ -196,8 +196,8 @@ workflows:
       #         only:
       #           - dev
       - build:
-          name: build dev al2023
-          os_distro: "al2023"
+          name: build dev al2
+          os_distro: "al2"
           context:
             - AWS_OPERATIONS_DEV_0
             - PACKER_OPERATIONS_DEV_0
@@ -206,4 +206,4 @@ workflows:
           filters:
             branches:
               only:
-                - dev
+                - DO-6065-al2023-ami-eks-operation-1.32-upstream_v20260818 #dev
