@@ -49,7 +49,8 @@ else ifneq ($(filter $(aws_region),us-gov-west-1 us-gov-east-1),)
 endif
 
 # default to the latest supported Kubernetes version
-k8s=1.31
+k8s=1.32
+#kubernetes_build_date=2026-09-10
 
 .PHONY: build
 build: ## Build EKS Optimized AMI, default using AL2, use os_distro=al2023 for AL2023 AMI
@@ -151,6 +152,12 @@ k8s: validate ## Build default K8s version of EKS Optimized AMI
 .PHONY: 1.31
 1.31: ## Build EKS Optimized AMI - K8s 1.31
 	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.31 $(aws_region))
+
+.PHONY: 1.32
+1.32: ## Build EKS Optimized AMI - K8s 1.32
+	$(MAKE) k8s $(shell hack/latest-binaries.sh 1.32 $(aws_region))
+
+
 
 .PHONY: lint-docs
 lint-docs: ## Lint the docs
